@@ -6,7 +6,7 @@ export function GalaxyMap() {
   const planets = useGameStore((s) => s.planets)
   const selectedPlanetId = useGameStore((s) => s.selectedPlanetId)
   const selectPlanet = useGameStore((s) => s.selectPlanet)
-  const attackPlanet = useGameStore((s) => s.attackPlanet)
+  const initiateInvasion = useGameStore((s) => s.initiateInvasion)
   const fleetPower = useFleetPower()
 
   const playerPlanets = planets.filter((p) => p.owner === 'player')
@@ -63,9 +63,9 @@ export function GalaxyMap() {
             <button
               className="btn btn-attack"
               disabled={fleetPower === 0}
-              onClick={() => attackPlanet(selectedPlanet.id)}
+              onClick={() => initiateInvasion(selectedPlanet.id)}
             >
-              ⚔️ Launch Invasion
+              ⚔️ Deploy Ground Forces
             </button>
           )}
           {selectedPlanet.owner === 'player' && (

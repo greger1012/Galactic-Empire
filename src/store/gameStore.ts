@@ -1,8 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { BUILDING_INFO, PLANET_TYPE_INFO, SHIP_INFO, getPlanetMaxPopulation } from '../game/constants'
+import { BUILDING_INFO, ENEMY_FACTIONS, PLANET_TYPE_INFO, SHIP_INFO, getPlanetMaxPopulation } from '../game/constants'
 import {
-  applyFleetLosses,
   calculateConsumption,
   calculatePlanetDefense,
   calculateProduction,
@@ -14,23 +13,58 @@ import {
   getMinimumPopulation,
   getPopulationGrowthModifier,
   getTotalShips,
-  resolveCombat,
   subtractResources,
 } from '../game/engine'
 import { createInitialState } from '../game/initialState'
-import type { BuildingType, GameState, ShipType } from '../game/types'
+import type { BuildingType, Fleet, GameState, ShipType } from '../game/types'
+import { useBattleStore } from './battleStore'
 
 interface GameActions {
   selectPlanet: (planetId: string) => void
   upgradeBuilding: (planetId: string, buildingType: BuildingType) => void
   buildShip: (shipType: ShipType) => void
-  attackPlanet: (planetId: string) => void
+  initiateInvasion: (planetId: string) => void
+  completeBattle: (planetId: string, survivalRatio: number) => void
+  retreatBattle: (planetId: string) => void
+  failBattle: (planetId: string) => void
   advanceTick: () => void
   resetGame: () => void
   setEmpireName: (name: string) => void
 }
 
 type GameStore = GameState & GameActions
+
+function applyFleetCasualties(fleet: Fleet, casualtyRate: number): Fleet {
+  const result = { ...fleet }
+  for (const type of Object.keys(result) as ShipType[]) {
+    const loss = Math.floor(result[type] * casualtyRate)
+    result[type] = Math.max(0, result[type] - loss)
+  }
+  return result
+}
+
+function conquerPlanet(
+  planets: GameState['planets'],
+  planetId: string
+): GameState['planets'] {
+  return planets.map((p) => {
+    if (p.id !== planetId) return p
+    const conquered = {
+      ...p,
+      owner: 'player' as const,
+      enemyFaction: undefined,
+      population: Math.max(
+        getMinimumPopulation(p),
+        Math.floor(p.population * (0.35 + PLANET_TYPE_INFO[p.type].survivability * 0.25))
+      ),
+      maxPopulation: getPlanetMaxPopulation(p.type, Math.max(p.maxPopulation, 3000)),
+    }
+    return {
+      ...conquered,
+      defenseRating: calculatePlanetDefense(conquered),
+    }
+  })
+}
 
 export const useGameStore = create<GameStore>()(
   persist(
@@ -105,7 +139,7 @@ export const useGameStore = create<GameStore>()(
         })
       },
 
-      attackPlanet: (planetId) => {
+      initiateInvasion: (planetId) => {
         const state = get()
         const target = state.planets.find((p) => p.id === planetId)
         if (!target || target.owner !== 'enemy') return
@@ -121,42 +155,34 @@ export const useGameStore = create<GameStore>()(
           return
         }
 
-        const result = resolveCombat(state.fleet, target.defenseRating, target.name)
-        const newFleet = applyFleetLosses(state.fleet, result.attackerLosses)
+        const faction = target.enemyFaction
+          ? ENEMY_FACTIONS.find((f) => f.id === target.enemyFaction)
+          : undefined
 
-        let planets = state.planets
+        useBattleStore.getState().startBattle(
+          planetId,
+          target.name,
+          faction?.color ?? '#ff6b6b',
+          getFleetPower(state.fleet),
+          target.defenseRating
+        )
+      },
+
+      completeBattle: (planetId, survivalRatio) => {
+        const state = get()
+        const target = state.planets.find((p) => p.id === planetId)
+        if (!target) return
+
+        const casualtyRate = Math.min(0.7, Math.max(0.1, 1 - survivalRatio * 0.85))
+        const newFleet = applyFleetCasualties(state.fleet, casualtyRate)
+        let planets = conquerPlanet(state.planets, planetId)
         let gameWon = state.gameWon
 
-        if (result.victory) {
-          planets = state.planets.map((p) => {
-            if (p.id !== planetId) return p
-            const conquered = {
-              ...p,
-              owner: 'player' as const,
-              enemyFaction: undefined,
-              population: Math.max(
-                getMinimumPopulation(p),
-                Math.floor(p.population * (0.35 + PLANET_TYPE_INFO[p.type].survivability * 0.25))
-              ),
-              maxPopulation: getPlanetMaxPopulation(
-                p.type,
-                Math.max(p.maxPopulation, 3000)
-              ),
-            }
-            return {
-              ...conquered,
-              defenseRating: calculatePlanetDefense(conquered),
-            }
-          })
-          const enemyRemaining = planets.filter((p) => p.owner === 'enemy').length
-          if (enemyRemaining === 0) {
-            gameWon = true
-          }
-        }
+        const enemyRemaining = planets.filter((p) => p.owner === 'enemy').length
+        if (enemyRemaining === 0) gameWon = true
 
-        const eventType = result.victory ? 'success' : 'danger'
         const events = [
-          createEvent(eventType, result.message),
+          createEvent('success', `Victory! ${target.name} has been conquered!`),
           ...state.events.slice(0, 49),
         ]
 
@@ -164,7 +190,7 @@ export const useGameStore = create<GameStore>()(
           events.unshift(
             createEvent(
               'success',
-              '🎉 Victory! You have conquered the galaxy and unified all worlds under your empire!'
+              'Victory! You have conquered the galaxy and unified all worlds under your empire!'
             )
           )
         }
@@ -172,9 +198,43 @@ export const useGameStore = create<GameStore>()(
         set({ fleet: newFleet, planets, events, gameWon })
       },
 
+      retreatBattle: (planetId) => {
+        const state = get()
+        const target = state.planets.find((p) => p.id === planetId)
+        const planetName = target?.name ?? 'the planet'
+
+        const newFleet = applyFleetCasualties(state.fleet, 0.35)
+        useBattleStore.getState().endBattle()
+
+        set({
+          fleet: newFleet,
+          events: [
+            createEvent('warning', `Retreat from ${planetName}. Ground forces withdrawn.`),
+            ...state.events.slice(0, 49),
+          ],
+        })
+      },
+
+      failBattle: (planetId) => {
+        const state = get()
+        const target = state.planets.find((p) => p.id === planetId)
+        const planetName = target?.name ?? 'the planet'
+
+        const newFleet = applyFleetCasualties(state.fleet, 0.75)
+
+        set({
+          fleet: newFleet,
+          events: [
+            createEvent('danger', `Defeat at ${planetName}. Your assault force was annihilated.`),
+            ...state.events.slice(0, 49),
+          ],
+        })
+      },
+
       advanceTick: () => {
         const state = get()
         if (state.gameWon || state.gameOver) return
+        if (useBattleStore.getState().battle?.active) return
 
         const production = calculateProduction(state.planets)
         const consumption = calculateConsumption(state.planets)
