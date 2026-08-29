@@ -1,8 +1,15 @@
-import { BUILDING_INFO, PLANET_TYPE_INFO } from '../game/constants'
+import { BUILDING_INFO, PLANET_SPECIALIZATION_LABELS, PLANET_TYPE_INFO } from '../game/constants'
 import { getBuildingCost, getBuildingLevel } from '../game/engine'
 import type { BuildingType } from '../game/types'
 import { useGameStore } from '../store/gameStore'
 import { useProductionRates } from '../store/gameStore'
+
+function formatBonus(value: number): string {
+  const percent = Math.round(value * 100)
+  if (percent === 100) return '100%'
+  if (percent > 100) return `+${percent - 100}%`
+  return `-${100 - percent}%`
+}
 
 export function PlanetPanel() {
   const planet = useGameStore((s) =>
@@ -15,6 +22,7 @@ export function PlanetPanel() {
   if (!planet) return null
 
   const typeInfo = PLANET_TYPE_INFO[planet.type]
+  const specInfo = PLANET_SPECIALIZATION_LABELS[typeInfo.specialization]
   const isPlayer = planet.owner === 'player'
 
   return (
@@ -27,7 +35,52 @@ export function PlanetPanel() {
             {typeInfo.name} · {planet.owner === 'player' ? 'Your Territory' : 'Enemy World'}
             {planet.enemyFaction && ` · ${planet.enemyFaction}`}
           </p>
+          <span
+            className="planet-specialization"
+            style={{ borderColor: specInfo.color, color: specInfo.color }}
+          >
+            {specInfo.label}
+          </span>
         </div>
+      </div>
+
+      <p className="planet-description">{typeInfo.description}</p>
+
+      <div className="planet-traits">
+        <div className="trait">
+          <span className="trait-label">Survivability</span>
+          <div className="trait-bar">
+            <div
+              className="trait-fill survivability"
+              style={{ width: `${typeInfo.survivability * 100}%` }}
+            />
+          </div>
+          <span className="trait-value">{Math.round(typeInfo.survivability * 100)}%</span>
+        </div>
+        <div className="trait-grid">
+          <div className="trait-stat">
+            <span>⛏️ Minerals</span>
+            <span>{formatBonus(typeInfo.mineralBonus)}</span>
+          </div>
+          <div className="trait-stat">
+            <span>⚡ Energy</span>
+            <span>{formatBonus(typeInfo.energyBonus)}</span>
+          </div>
+          <div className="trait-stat">
+            <span>🌾 Food</span>
+            <span>{formatBonus(typeInfo.foodBonus)}</span>
+          </div>
+          <div className="trait-stat">
+            <span>💰 Credits</span>
+            <span>{formatBonus(typeInfo.creditBonus)}</span>
+          </div>
+        </div>
+        {typeInfo.strategicBonus > 0 && (
+          <div className="strategic-note">
+            🎯 Strategic value: +{typeInfo.strategicBonus} defense · +
+            {(typeInfo.strategicBonus / 5).toFixed(1)} credits/cycle from trade routes
+          </div>
+        )}
       </div>
 
       <div className="planet-stats">

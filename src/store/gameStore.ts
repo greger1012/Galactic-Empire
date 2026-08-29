@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { BUILDING_INFO, SHIP_INFO } from '../game/constants'
+import { BUILDING_INFO, PLANET_TYPE_INFO, SHIP_INFO, getPlanetMaxPopulation } from '../game/constants'
 import {
   applyFleetLosses,
   calculateConsumption,
@@ -11,6 +11,8 @@ import {
   getBuildingCost,
   getBuildingLevel,
   getFleetPower,
+  getMinimumPopulation,
+  getPopulationGrowthModifier,
   getTotalShips,
   resolveCombat,
   subtractResources,
@@ -126,20 +128,26 @@ export const useGameStore = create<GameStore>()(
         let gameWon = state.gameWon
 
         if (result.victory) {
-          planets = state.planets.map((p) =>
-            p.id === planetId
-              ? {
-                  ...p,
-                  owner: 'player' as const,
-                  enemyFaction: undefined,
-                  population: Math.floor(p.population * 0.5),
-                  defenseRating: calculatePlanetDefense({
-                    ...p,
-                    owner: 'player',
-                  }),
-                }
-              : p
-          )
+          planets = state.planets.map((p) => {
+            if (p.id !== planetId) return p
+            const conquered = {
+              ...p,
+              owner: 'player' as const,
+              enemyFaction: undefined,
+              population: Math.max(
+                getMinimumPopulation(p),
+                Math.floor(p.population * (0.35 + PLANET_TYPE_INFO[p.type].survivability * 0.25))
+              ),
+              maxPopulation: getPlanetMaxPopulation(
+                p.type,
+                Math.max(p.maxPopulation, 3000)
+              ),
+            }
+            return {
+              ...conquered,
+              defenseRating: calculatePlanetDefense(conquered),
+            }
+          })
           const enemyRemaining = planets.filter((p) => p.owner === 'enemy').length
           if (enemyRemaining === 0) {
             gameWon = true
@@ -187,12 +195,20 @@ export const useGameStore = create<GameStore>()(
 
         const planets = state.planets.map((p) => {
           if (p.owner !== 'player') return p
+
+          const minPop = getMinimumPopulation(p)
+          const growthMod = getPopulationGrowthModifier(p, netProduction.food >= 0)
           let population = p.population
-          if (netProduction.food > 0 && p.population < p.maxPopulation) {
-            population = Math.min(p.maxPopulation, p.population + 1)
-          } else if (netProduction.food < 0 && p.population > 100) {
-            population = Math.max(100, p.population - 1)
+
+          if (growthMod > 0 && p.population < p.maxPopulation) {
+            const growthChance = growthMod >= 1 ? 1 : growthMod >= 0.5 ? 0.5 : 0.25
+            if (Math.random() < growthChance) {
+              population = Math.min(p.maxPopulation, p.population + 1)
+            }
+          } else if (netProduction.food < 0 && p.population > minPop) {
+            population = Math.max(minPop, p.population - 1)
           }
+
           return { ...p, population }
         })
 

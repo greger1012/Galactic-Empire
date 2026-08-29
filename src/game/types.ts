@@ -12,7 +12,42 @@ export type BuildingType =
 
 export type ShipType = 'scout' | 'frigate' | 'destroyer' | 'carrier'
 
-export type PlanetType = 'terran' | 'desert' | 'ice' | 'volcanic' | 'gasGiant'
+export type PlanetType =
+  | 'terran'
+  | 'desert'
+  | 'ice'
+  | 'volcanic'
+  | 'gasGiant'
+  | 'oceanic'
+  | 'jungle'
+  | 'habitable'
+  | 'asteroid'
+  | 'barren'
+  | 'toxic'
+  | 'crystalline'
+
+export type PlanetSpecialization =
+  | 'balanced'
+  | 'farming'
+  | 'civilization'
+  | 'mining'
+  | 'industrial'
+  | 'strategic'
+
+export interface PlanetTypeInfo {
+  name: string
+  icon: string
+  description: string
+  specialization: PlanetSpecialization
+  mineralBonus: number
+  energyBonus: number
+  foodBonus: number
+  creditBonus: number
+  survivability: number
+  populationCapMultiplier: number
+  strategicBonus: number
+  baseDefenseBonus: number
+}
 
 export type Owner = 'player' | 'enemy'
 

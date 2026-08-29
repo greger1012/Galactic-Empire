@@ -1,4 +1,4 @@
-import { ENEMY_PLANETS, createEnemyPlanet } from './constants'
+import { ENEMY_PLANETS, createEnemyPlanet, getPlanetMaxPopulation } from './constants'
 import type { GameState } from './types'
 
 export function createInitialState(): GameState {
@@ -8,7 +8,7 @@ export function createInitialState(): GameState {
     type: 'terran' as const,
     owner: 'player' as const,
     population: 1000,
-    maxPopulation: 5000,
+    maxPopulation: getPlanetMaxPopulation('terran', 5000),
     buildings: [
       { type: 'extractionHub' as const, level: 1 },
       { type: 'solarArray' as const, level: 1 },

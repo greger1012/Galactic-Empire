@@ -1,4 +1,4 @@
-import { ENEMY_FACTIONS, PLANET_TYPE_INFO } from '../game/constants'
+import { ENEMY_FACTIONS, PLANET_TYPE_INFO, getPlanetTypeSummary } from '../game/constants'
 import type { Planet } from '../game/types'
 import { useFleetPower, useGameStore } from '../store/gameStore'
 
@@ -42,7 +42,7 @@ export function GalaxyMap() {
                 borderColor: faction?.color ?? (planet.owner === 'player' ? '#4ecdc4' : '#ff6b6b'),
               }}
               onClick={() => selectPlanet(planet.id)}
-              title={`${planet.name} (${typeInfo.name})`}
+              title={`${planet.name} — ${getPlanetTypeSummary(planet.type)}`}
             >
               <span className="node-icon">{typeInfo.icon}</span>
               <span className="node-name">{planet.name}</span>
@@ -56,7 +56,8 @@ export function GalaxyMap() {
         <div className="planet-actions">
           <h3>{selectedPlanet.name}</h3>
           <p>
-            Defense: {selectedPlanet.defenseRating} · Your Fleet Power: {fleetPower}
+            {getPlanetTypeSummary(selectedPlanet.type)} · Defense: {selectedPlanet.defenseRating} ·
+            Your Fleet Power: {fleetPower}
           </p>
           {selectedPlanet.owner === 'enemy' && (
             <button

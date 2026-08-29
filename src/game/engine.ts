@@ -90,9 +90,14 @@ export function calculateProduction(planets: Planet[]): ProductionRates {
           if (resource === 'minerals') amount *= typeInfo.mineralBonus
           if (resource === 'energy') amount *= typeInfo.energyBonus
           if (resource === 'food') amount *= typeInfo.foodBonus
+          if (resource === 'credits') amount *= typeInfo.creditBonus
           rates[resource] += amount
         }
       }
+    }
+
+    if (typeInfo.strategicBonus > 0) {
+      rates.credits += typeInfo.strategicBonus / 5
     }
   }
 
@@ -109,6 +114,8 @@ export function calculateConsumption(planets: Planet[]): ProductionRates {
 
   for (const planet of planets) {
     if (planet.owner !== 'player') continue
+    const typeInfo = PLANET_TYPE_INFO[planet.type]
+    const foodDemandMultiplier = 1 + (1 - typeInfo.survivability) * 1.5
 
     for (const building of planet.buildings) {
       const info = BUILDING_INFO[building.type]
@@ -119,23 +126,45 @@ export function calculateConsumption(planets: Planet[]): ProductionRates {
       }
     }
 
-    consumption.food += Math.ceil(planet.population / 1000)
+    consumption.food += Math.ceil((planet.population / 1000) * foodDemandMultiplier)
   }
 
   return consumption
 }
 
 export function calculatePlanetDefense(planet: Planet): number {
-  let defense = 10
+  const typeInfo = PLANET_TYPE_INFO[planet.type]
+  let defense = 10 + typeInfo.baseDefenseBonus + typeInfo.strategicBonus
+
   for (const building of planet.buildings) {
     const info = BUILDING_INFO[building.type]
     defense += info.defenseBonus * building.level
   }
+
   defense += Math.floor(planet.population / 500)
+
   if (planet.owner === 'enemy') {
     defense += 20
   }
+
   return defense
+}
+
+export function getPopulationGrowthModifier(planet: Planet, empireFoodSurplus: boolean): number {
+  const typeInfo = PLANET_TYPE_INFO[planet.type]
+  if (!empireFoodSurplus) return -1
+
+  if (typeInfo.survivability >= 0.9) return 1.2
+  if (typeInfo.survivability >= 0.7) return 1
+  if (typeInfo.survivability >= 0.4) return 0.5
+  return 0.2
+}
+
+export function getMinimumPopulation(planet: Planet): number {
+  const typeInfo = PLANET_TYPE_INFO[planet.type]
+  if (typeInfo.specialization === 'strategic') return 25
+  if (typeInfo.survivability < 0.3) return 50
+  return 100
 }
 
 export function getFleetPower(fleet: Fleet): number {
