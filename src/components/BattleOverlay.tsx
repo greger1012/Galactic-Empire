@@ -7,7 +7,12 @@ import { useGameStore } from '../store/gameStore'
 export function BattleOverlay() {
   const battle = useBattleStore((s) => s.battle)
   const update = useBattleStore((s) => s.update)
-  const handleClick = useBattleStore((s) => s.handleClick)
+  const handleMouseDown = useBattleStore((s) => s.handleMouseDown)
+  const handleMouseMove = useBattleStore((s) => s.handleMouseMove)
+  const handleMouseUp = useBattleStore((s) => s.handleMouseUp)
+  const togglePause = useBattleStore((s) => s.togglePause)
+  const toggleHold = useBattleStore((s) => s.toggleHold)
+  const activateGrenade = useBattleStore((s) => s.activateGrenade)
   const endBattle = useBattleStore((s) => s.endBattle)
   const completeBattle = useGameStore((s) => s.completeBattle)
   const failBattle = useGameStore((s) => s.failBattle)
@@ -72,6 +77,30 @@ export function BattleOverlay() {
     return () => cancelAnimationFrame(frameId)
   }, [battle?.active])
 
+  useEffect(() => {
+    if (!battle?.active) return
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault()
+        togglePause()
+      }
+      if (e.key === 'h' || e.key === 'H') toggleHold()
+      if (e.key === 'g' || e.key === 'G') activateGrenade()
+      if (e.key === 'Escape') {
+        const b = useBattleStore.getState().battle
+        if (b?.activeAbility === 'grenade') {
+          useBattleStore.setState({
+            battle: b ? { ...b, activeAbility: 'none' } : null,
+          })
+        }
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [battle?.active, togglePause, toggleHold, activateGrenade])
+
   if (!battle?.active) return null
 
   const playerAlive = battle.units.filter(
@@ -81,18 +110,19 @@ export function BattleOverlay() {
     (u) => u.team === 'enemy' && u.state !== 'dead' && u.state !== 'dying'
   ).length
 
-  const onCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current
-    if (!canvas || battle.status !== 'active') return
-    const coords = canvasToBattleCoords(
-      canvas,
-      e.clientX,
-      e.clientY,
-      battle.width,
-      battle.height
-    )
-    handleClick(coords.x, coords.y)
+  const getCoords = (clientX: number, clientY: number) => {
+    const canvas = canvasRef.current!
+    return canvasToBattleCoords(canvas, clientX, clientY, battle.width, battle.height)
   }
+
+  const selectedCount = battle.selectedUnitIds.length
+  const grenadeReady = battle.units.some(
+    (u) =>
+      battle.selectedUnitIds.includes(u.id) &&
+      u.grenadeCooldown <= 0 &&
+      u.state !== 'dead' &&
+      u.state !== 'dying'
+  )
 
   return (
     <div className="battle-overlay">
@@ -109,13 +139,41 @@ export function BattleOverlay() {
             <span className="hud-enemy" style={{ color: battle.enemyColor }}>
               Hostiles: {enemyAlive}
             </span>
+            {selectedCount > 0 && (
+              <span className="hud-selected">Selected: {selectedCount}</span>
+            )}
             {battle.status === 'active' && (
-              <button
-                className="btn btn-retreat"
-                onClick={() => retreatBattle(battle.planetId)}
-              >
-                Retreat
-              </button>
+              <>
+                <button
+                  className={`btn btn-ability ${battle.paused ? 'active' : ''}`}
+                  onClick={togglePause}
+                  title="Pause (Space)"
+                >
+                  {battle.paused ? '▶ Resume' : '⏸ Pause'}
+                </button>
+                <button
+                  className="btn btn-ability"
+                  onClick={toggleHold}
+                  disabled={selectedCount === 0}
+                  title="Hold Position (H)"
+                >
+                  🛡 Hold
+                </button>
+                <button
+                  className={`btn btn-ability ${battle.activeAbility === 'grenade' ? 'active' : ''}`}
+                  onClick={activateGrenade}
+                  disabled={selectedCount === 0 || !grenadeReady}
+                  title="Frag Grenade (G)"
+                >
+                  💣 Grenade
+                </button>
+                <button
+                  className="btn btn-retreat"
+                  onClick={() => retreatBattle(battle.planetId)}
+                >
+                  Retreat
+                </button>
+              </>
             )}
           </div>
         </header>
@@ -126,8 +184,24 @@ export function BattleOverlay() {
             width={battle.width}
             height={battle.height}
             className="battle-canvas"
-            onClick={onCanvasClick}
+            onMouseDown={(e) => {
+              const c = getCoords(e.clientX, e.clientY)
+              handleMouseDown(c.x, c.y, e.shiftKey)
+            }}
+            onMouseMove={(e) => {
+              const c = getCoords(e.clientX, e.clientY)
+              handleMouseMove(c.x, c.y)
+            }}
+            onMouseUp={(e) => {
+              const c = getCoords(e.clientX, e.clientY)
+              handleMouseUp(c.x, c.y, e.shiftKey)
+            }}
+            onContextMenu={(e) => e.preventDefault()}
           />
+
+          {battle.activeAbility === 'grenade' && (
+            <div className="ability-hint">Click to throw grenade · Esc to cancel</div>
+          )}
 
           {battle.status === 'victory' && (
             <div className="battle-result victory">
@@ -145,8 +219,11 @@ export function BattleOverlay() {
 
         <footer className="battle-footer">
           <p>
-            Click a legionnaire to select · Click the field to advance · Units auto-fire at
-            range
+            Drag to select squad · Shift+click to add · Click field to advance ·
+            Full cover blocks shots · Half/Full cover reduces damage
+          </p>
+          <p className="battle-hotkeys">
+            Space: Pause · H: Hold position · G: Grenade
           </p>
         </footer>
       </div>

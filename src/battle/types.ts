@@ -2,6 +2,8 @@ export type BattleTeam = 'player' | 'enemy'
 
 export type UnitAnimState = 'idle' | 'moving' | 'shooting' | 'dying' | 'dead'
 
+export type CoverLevel = 'none' | 'half' | 'full'
+
 export interface BattleUnit {
   id: string
   team: BattleTeam
@@ -23,6 +25,11 @@ export interface BattleUnit {
   animFrame: number
   shootTargetId: string | null
   squadIndex: number
+  holdPosition: boolean
+  suppressedTimer: number
+  grenadeCooldown: number
+  coverLevel: CoverLevel
+  pendingGrenade: { x: number; y: number } | null
 }
 
 export interface BattleTracer {
@@ -33,6 +40,17 @@ export interface BattleTracer {
   toY: number
   team: BattleTeam
   life: number
+  blocked: boolean
+}
+
+export interface BattleExplosion {
+  id: string
+  x: number
+  y: number
+  radius: number
+  life: number
+  maxLife: number
+  team: BattleTeam
 }
 
 export interface BattleCover {
@@ -40,9 +58,19 @@ export interface BattleCover {
   y: number
   width: number
   height: number
+  level: CoverLevel
 }
 
 export type BattleStatus = 'active' | 'victory' | 'defeat'
+
+export type ActiveAbility = 'none' | 'grenade'
+
+export interface DragSelect {
+  startX: number
+  startY: number
+  endX: number
+  endY: number
+}
 
 export interface BattleState {
   active: boolean
@@ -50,10 +78,14 @@ export interface BattleState {
   planetName: string
   enemyColor: string
   status: BattleStatus
+  paused: boolean
   units: BattleUnit[]
   tracers: BattleTracer[]
+  explosions: BattleExplosion[]
   covers: BattleCover[]
-  selectedUnitId: string | null
+  selectedUnitIds: string[]
+  dragSelect: DragSelect | null
+  activeAbility: ActiveAbility
   initialPlayerCount: number
   elapsed: number
   width: number

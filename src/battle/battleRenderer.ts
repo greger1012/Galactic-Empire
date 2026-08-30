@@ -16,17 +16,22 @@ const TEAM_COLORS = {
 }
 
 function drawCover(ctx: CanvasRenderingContext2D, cover: BattleState['covers'][0]): void {
-  ctx.fillStyle = '#1a2230'
-  ctx.strokeStyle = '#3d4f63'
+  const isFull = cover.level === 'full'
+  ctx.fillStyle = isFull ? '#1a2230' : '#1e2836'
+  ctx.strokeStyle = isFull ? '#4a6078' : '#3d4f63'
   ctx.lineWidth = 2
   ctx.fillRect(cover.x, cover.y, cover.width, cover.height)
   ctx.strokeRect(cover.x, cover.y, cover.width, cover.height)
 
-  ctx.strokeStyle = 'rgba(201, 162, 39, 0.35)'
+  ctx.strokeStyle = isFull ? 'rgba(201, 162, 39, 0.5)' : 'rgba(201, 162, 39, 0.25)'
   ctx.beginPath()
   ctx.moveTo(cover.x + 6, cover.y + 6)
   ctx.lineTo(cover.x + cover.width - 6, cover.y + cover.height - 6)
   ctx.stroke()
+
+  ctx.fillStyle = isFull ? 'rgba(78, 205, 196, 0.15)' : 'rgba(78, 205, 196, 0.08)'
+  ctx.font = '9px sans-serif'
+  ctx.fillText(isFull ? 'FULL' : 'HALF', cover.x + 4, cover.y + cover.height - 4)
 }
 
 function drawTopDownSoldier(ctx: CanvasRenderingContext2D, unit: BattleUnit): void {
@@ -45,19 +50,16 @@ function drawTopDownSoldier(ctx: CanvasRenderingContext2D, unit: BattleUnit): vo
     unit.state === 'moving' ? Math.sin(unit.animFrame * 2) * 1.5 : 0
   const shootRecoil = unit.state === 'shooting' ? -2 : 0
 
-  // Shadow
   ctx.fillStyle = 'rgba(0,0,0,0.35)'
   ctx.beginPath()
   ctx.ellipse(2, 4, 11, 7, 0, 0, Math.PI * 2)
   ctx.fill()
 
-  // Legs (walk cycle)
   const legSwing = unit.state === 'moving' ? Math.sin(unit.animFrame * 2) * 4 : 0
   ctx.fillStyle = '#2a3544'
   ctx.fillRect(-4 + legSwing, 4 + walkBob, 4, 8)
   ctx.fillRect(0 - legSwing, 4 + walkBob, 4, 8)
 
-  // Torso armor
   ctx.fillStyle = colors.armor
   ctx.strokeStyle = colors.trim
   ctx.lineWidth = 1.5
@@ -66,7 +68,6 @@ function drawTopDownSoldier(ctx: CanvasRenderingContext2D, unit: BattleUnit): vo
   ctx.fill()
   ctx.stroke()
 
-  // Shoulder pads
   ctx.fillStyle = colors.trim
   ctx.beginPath()
   ctx.ellipse(-10, -2 + walkBob, 4, 5, 0, 0, Math.PI * 2)
@@ -75,7 +76,6 @@ function drawTopDownSoldier(ctx: CanvasRenderingContext2D, unit: BattleUnit): vo
   ctx.ellipse(10, -2 + walkBob, 4, 5, 0, 0, Math.PI * 2)
   ctx.fill()
 
-  // Helmet
   ctx.fillStyle = colors.armor
   ctx.strokeStyle = colors.trim
   ctx.beginPath()
@@ -83,15 +83,12 @@ function drawTopDownSoldier(ctx: CanvasRenderingContext2D, unit: BattleUnit): vo
   ctx.fill()
   ctx.stroke()
 
-  // Visor
   ctx.fillStyle = colors.visor
   ctx.fillRect(2, -12 + walkBob, 6, 3)
 
-  // Weapon
   ctx.fillStyle = colors.gun
   ctx.fillRect(6 + shootRecoil, -2 + walkBob, 14, 4)
 
-  // Muzzle flash
   if (unit.state === 'shooting' && unit.stateTimer < 0.1) {
     ctx.fillStyle = '#ffe566'
     ctx.shadowColor = '#ff9f1c'
@@ -104,7 +101,23 @@ function drawTopDownSoldier(ctx: CanvasRenderingContext2D, unit: BattleUnit): vo
 
   ctx.restore()
 
-  // Health bar
+  // Status indicators
+  if (unit.coverLevel !== 'none' && unit.state !== 'dying') {
+    ctx.fillStyle = unit.coverLevel === 'full' ? '#4ecdc4' : '#74c0fc'
+    ctx.font = 'bold 8px sans-serif'
+    ctx.fillText('▣', unit.x - 14, unit.y - 20)
+  }
+  if (unit.holdPosition && unit.state !== 'dying') {
+    ctx.fillStyle = '#c9a227'
+    ctx.font = 'bold 9px sans-serif'
+    ctx.fillText('⏸', unit.x + 8, unit.y - 20)
+  }
+  if (unit.suppressedTimer > 0 && unit.state !== 'dying') {
+    ctx.fillStyle = '#ff6b6b'
+    ctx.font = 'bold 9px sans-serif'
+    ctx.fillText('!', unit.x - 4, unit.y - 22)
+  }
+
   if (unit.health < unit.maxHealth && unit.state !== 'dying') {
     const barW = 24
     const pct = unit.health / unit.maxHealth
@@ -117,41 +130,75 @@ function drawTopDownSoldier(ctx: CanvasRenderingContext2D, unit: BattleUnit): vo
 
 function drawTracer(ctx: CanvasRenderingContext2D, tracer: BattleState['tracers'][0]): void {
   const alpha = tracer.life / 0.12
-  ctx.strokeStyle =
-    tracer.team === 'player'
-      ? `rgba(126, 232, 250, ${alpha})`
-      : `rgba(255, 107, 74, ${alpha})`
+  if (tracer.blocked) {
+    ctx.strokeStyle = `rgba(150, 150, 150, ${alpha * 0.5})`
+    ctx.setLineDash([3, 3])
+  } else {
+    ctx.strokeStyle =
+      tracer.team === 'player'
+        ? `rgba(126, 232, 250, ${alpha})`
+        : `rgba(255, 107, 74, ${alpha})`
+    ctx.setLineDash([])
+  }
   ctx.lineWidth = 2
-  ctx.shadowColor = ctx.strokeStyle
-  ctx.shadowBlur = 6
   ctx.beginPath()
   ctx.moveTo(tracer.fromX, tracer.fromY)
   ctx.lineTo(tracer.toX, tracer.toY)
   ctx.stroke()
-  ctx.shadowBlur = 0
+  ctx.setLineDash([])
 }
 
-function drawSelectionRing(ctx: CanvasRenderingContext2D, unit: BattleUnit): void {
-  ctx.strokeStyle = '#c9a227'
-  ctx.lineWidth = 2
-  ctx.setLineDash([4, 4])
+function drawExplosion(ctx: CanvasRenderingContext2D, explosion: BattleState['explosions'][0]): void {
+  const progress = 1 - explosion.life / explosion.maxLife
+  const radius = explosion.radius * (0.3 + progress * 0.7)
+  const alpha = explosion.life / explosion.maxLife
+
+  ctx.fillStyle = `rgba(255, 140, 50, ${alpha * 0.35})`
+  ctx.beginPath()
+  ctx.arc(explosion.x, explosion.y, radius, 0, Math.PI * 2)
+  ctx.fill()
+
+  ctx.strokeStyle = `rgba(255, 220, 100, ${alpha})`
+  ctx.lineWidth = 3
+  ctx.beginPath()
+  ctx.arc(explosion.x, explosion.y, radius * 0.6, 0, Math.PI * 2)
+  ctx.stroke()
+}
+
+function drawSelectionRing(ctx: CanvasRenderingContext2D, unit: BattleUnit, primary: boolean): void {
+  ctx.strokeStyle = primary ? '#c9a227' : 'rgba(201, 162, 39, 0.6)'
+  ctx.lineWidth = primary ? 2 : 1.5
+  ctx.setLineDash(primary ? [4, 4] : [2, 4])
   ctx.beginPath()
   ctx.arc(unit.x, unit.y, 22, 0, Math.PI * 2)
   ctx.stroke()
   ctx.setLineDash([])
 }
 
+function drawDragSelect(ctx: CanvasRenderingContext2D, drag: NonNullable<BattleState['dragSelect']>): void {
+  const x = Math.min(drag.startX, drag.endX)
+  const y = Math.min(drag.startY, drag.endY)
+  const w = Math.abs(drag.endX - drag.startX)
+  const h = Math.abs(drag.endY - drag.startY)
+
+  ctx.fillStyle = 'rgba(78, 205, 196, 0.1)'
+  ctx.strokeStyle = 'rgba(78, 205, 196, 0.7)'
+  ctx.lineWidth = 1.5
+  ctx.setLineDash([4, 4])
+  ctx.fillRect(x, y, w, h)
+  ctx.strokeRect(x, y, w, h)
+  ctx.setLineDash([])
+}
+
 export function renderBattle(ctx: CanvasRenderingContext2D, state: BattleState): void {
   const { width, height } = state
 
-  // Floor
   const gradient = ctx.createLinearGradient(0, 0, 0, height)
   gradient.addColorStop(0, '#121820')
   gradient.addColorStop(1, '#0a0e14')
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, width, height)
 
-  // Grid
   ctx.strokeStyle = 'rgba(61, 79, 99, 0.25)'
   ctx.lineWidth = 1
   for (let x = 0; x < width; x += 40) {
@@ -167,12 +214,15 @@ export function renderBattle(ctx: CanvasRenderingContext2D, state: BattleState):
     ctx.stroke()
   }
 
-  // Ambient forge glow
   ctx.fillStyle = 'rgba(201, 162, 39, 0.03)'
   ctx.fillRect(0, 0, width, height)
 
   for (const cover of state.covers) {
     drawCover(ctx, cover)
+  }
+
+  for (const explosion of state.explosions) {
+    drawExplosion(ctx, explosion)
   }
 
   for (const tracer of state.tracers) {
@@ -184,21 +234,40 @@ export function renderBattle(ctx: CanvasRenderingContext2D, state: BattleState):
     drawTopDownSoldier(ctx, unit)
   }
 
-  if (state.selectedUnitId) {
-    const selected = state.units.find((u) => u.id === state.selectedUnitId)
-    if (selected && selected.state !== 'dead') {
-      drawSelectionRing(ctx, selected)
+  for (const unitId of state.selectedUnitIds) {
+    const unit = state.units.find((u) => u.id === unitId)
+    if (unit && unit.state !== 'dead') {
+      drawSelectionRing(ctx, unit, state.selectedUnitIds[0] === unitId)
 
-      if (selected.moveTargetX !== null && selected.moveTargetY !== null) {
-        ctx.strokeStyle = 'rgba(78, 205, 196, 0.5)'
-        ctx.setLineDash([6, 6])
+      if (unit.moveTargetX !== null && unit.moveTargetY !== null) {
+        ctx.strokeStyle = 'rgba(78, 205, 196, 0.35)'
+        ctx.setLineDash([4, 6])
         ctx.beginPath()
-        ctx.moveTo(selected.x, selected.y)
-        ctx.lineTo(selected.moveTargetX, selected.moveTargetY)
+        ctx.moveTo(unit.x, unit.y)
+        ctx.lineTo(unit.moveTargetX, unit.moveTargetY)
         ctx.stroke()
         ctx.setLineDash([])
       }
     }
+  }
+
+  if (state.dragSelect) {
+    drawDragSelect(ctx, state.dragSelect)
+  }
+
+  if (state.activeAbility === 'grenade') {
+    ctx.fillStyle = 'rgba(255, 100, 50, 0.08)'
+    ctx.fillRect(0, 0, width, height)
+  }
+
+  if (state.paused) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.35)'
+    ctx.fillRect(0, 0, width, height)
+    ctx.fillStyle = '#c9a227'
+    ctx.font = 'bold 28px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('PAUSED', width / 2, height / 2)
+    ctx.textAlign = 'start'
   }
 }
 
