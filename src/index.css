@@ -7,18 +7,25 @@
 }
 
 :root {
-  --bg-deep: #0a0e17;
-  --bg-panel: rgba(15, 23, 42, 0.85);
-  --bg-card: rgba(30, 41, 59, 0.7);
-  --border: rgba(100, 116, 139, 0.3);
-  --text: #e2e8f0;
-  --text-muted: #94a3b8;
-  --accent: #4ecdc4;
-  --accent-glow: rgba(78, 205, 196, 0.3);
-  --danger: #ff6b6b;
-  --success: #51cf66;
-  --warning: #ffd43b;
-  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --bg-deep: #06080c;
+  --bg-panel: rgba(10, 12, 18, 0.94);
+  --bg-card: rgba(18, 20, 28, 0.9);
+  --border: rgba(180, 140, 60, 0.22);
+  --border-bright: rgba(201, 162, 39, 0.45);
+  --text: #e8e4dc;
+  --text-muted: #8a8678;
+  --text-dim: #5c584e;
+  --accent: #c9a227;
+  --accent-bright: #e8c547;
+  --accent-cyan: #6ec4d8;
+  --accent-glow: rgba(201, 162, 39, 0.2);
+  --cyan-glow: rgba(110, 196, 216, 0.15);
+  --danger: #c44b4b;
+  --success: #5a9e6f;
+  --warning: #d4a843;
+  --font-display: 'Cinzel', 'Times New Roman', serif;
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
 }
 
 html,
@@ -28,7 +35,7 @@ body,
 }
 
 body {
-  font-family: var(--font);
+  font-family: var(--font-body);
   background: var(--bg-deep);
   color: var(--text);
   line-height: 1.5;
@@ -43,6 +50,8 @@ button {
 }
 
 h1, h2, h3, h4 {
+  font-family: var(--font-display);
   font-weight: 600;
   line-height: 1.2;
+  letter-spacing: 0.04em;
 }

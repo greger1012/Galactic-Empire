@@ -7,6 +7,8 @@ import type {
   Resources,
   ShipType,
 } from './types'
+import { FACTION_LORE } from './lore'
+import { BUILDING_LORE, PLANET_LORE_NAMES, SHIP_LORE } from './names'
 
 export const TICK_INTERVAL_MS = 1000
 
@@ -25,9 +27,9 @@ export const BUILDING_INFO: Record<
   }
 > = {
   extractionHub: {
-    name: 'Extraction Hub',
-    description: 'Mines minerals from the planet core',
-    icon: '⛏️',
+    name: BUILDING_LORE.extractionHub.name,
+    description: BUILDING_LORE.extractionHub.description,
+    icon: BUILDING_LORE.extractionHub.icon,
     baseCost: { minerals: 50, energy: 20, food: 0, credits: 0 },
     costMultiplier: 1.6,
     produces: { minerals: 3 },
@@ -36,9 +38,9 @@ export const BUILDING_INFO: Record<
     maxLevel: 10,
   },
   solarArray: {
-    name: 'Solar Array',
-    description: 'Generates energy from stellar radiation',
-    icon: '☀️',
+    name: BUILDING_LORE.solarArray.name,
+    description: BUILDING_LORE.solarArray.description,
+    icon: BUILDING_LORE.solarArray.icon,
     baseCost: { minerals: 40, energy: 0, food: 0, credits: 0 },
     costMultiplier: 1.5,
     produces: { energy: 4 },
@@ -46,9 +48,9 @@ export const BUILDING_INFO: Record<
     maxLevel: 10,
   },
   hydroponics: {
-    name: 'Hydroponics Bay',
-    description: 'Grows food to sustain your population',
-    icon: '🌱',
+    name: BUILDING_LORE.hydroponics.name,
+    description: BUILDING_LORE.hydroponics.description,
+    icon: BUILDING_LORE.hydroponics.icon,
     baseCost: { minerals: 30, energy: 15, food: 0, credits: 0 },
     costMultiplier: 1.5,
     produces: { food: 3 },
@@ -57,9 +59,9 @@ export const BUILDING_INFO: Record<
     maxLevel: 10,
   },
   shipyard: {
-    name: 'Orbital Shipyard',
-    description: 'Constructs warships for your fleet',
-    icon: '🚀',
+    name: BUILDING_LORE.shipyard.name,
+    description: BUILDING_LORE.shipyard.description,
+    icon: BUILDING_LORE.shipyard.icon,
     baseCost: { minerals: 100, energy: 50, food: 0, credits: 25 },
     costMultiplier: 1.8,
     consumes: { energy: 2 },
@@ -67,9 +69,9 @@ export const BUILDING_INFO: Record<
     maxLevel: 5,
   },
   shieldGenerator: {
-    name: 'Planetary Shield',
-    description: 'Defends against enemy bombardment',
-    icon: '🛡️',
+    name: BUILDING_LORE.shieldGenerator.name,
+    description: BUILDING_LORE.shieldGenerator.description,
+    icon: BUILDING_LORE.shieldGenerator.icon,
     baseCost: { minerals: 80, energy: 40, food: 0, credits: 10 },
     costMultiplier: 1.7,
     consumes: { energy: 2 },
@@ -77,9 +79,9 @@ export const BUILDING_INFO: Record<
     maxLevel: 8,
   },
   commandCenter: {
-    name: 'Command Center',
-    description: 'Coordinates empire operations and generates credits',
-    icon: '🏛️',
+    name: BUILDING_LORE.commandCenter.name,
+    description: BUILDING_LORE.commandCenter.description,
+    icon: BUILDING_LORE.commandCenter.icon,
     baseCost: { minerals: 150, energy: 60, food: 30, credits: 0 },
     costMultiplier: 2.0,
     produces: { credits: 1 },
@@ -101,33 +103,33 @@ export const SHIP_INFO: Record<
   }
 > = {
   scout: {
-    name: 'Scout',
-    description: 'Fast reconnaissance vessel',
-    icon: '🔭',
+    name: SHIP_LORE.scout.name,
+    description: SHIP_LORE.scout.description,
+    icon: SHIP_LORE.scout.icon,
     cost: { minerals: 25, energy: 10, food: 0, credits: 5 },
     attackPower: 5,
     buildTime: 1,
   },
   frigate: {
-    name: 'Frigate',
-    description: 'Versatile combat ship',
-    icon: '⚔️',
+    name: SHIP_LORE.frigate.name,
+    description: SHIP_LORE.frigate.description,
+    icon: SHIP_LORE.frigate.icon,
     cost: { minerals: 60, energy: 30, food: 0, credits: 15 },
     attackPower: 15,
     buildTime: 2,
   },
   destroyer: {
-    name: 'Destroyer',
-    description: 'Heavy warship with devastating firepower',
-    icon: '💥',
+    name: SHIP_LORE.destroyer.name,
+    description: SHIP_LORE.destroyer.description,
+    icon: SHIP_LORE.destroyer.icon,
     cost: { minerals: 150, energy: 80, food: 0, credits: 40 },
     attackPower: 40,
     buildTime: 4,
   },
   carrier: {
-    name: 'Carrier',
-    description: 'Massive capital ship commanding fleets',
-    icon: '🛸',
+    name: SHIP_LORE.carrier.name,
+    description: SHIP_LORE.carrier.description,
+    icon: SHIP_LORE.carrier.icon,
     cost: { minerals: 400, energy: 200, food: 0, credits: 100 },
     attackPower: 80,
     buildTime: 8,
@@ -138,19 +140,21 @@ export const PLANET_SPECIALIZATION_LABELS: Record<
   PlanetTypeInfo['specialization'],
   { label: string; color: string }
 > = {
-  balanced: { label: 'Balanced', color: '#94a3b8' },
-  farming: { label: 'Farming', color: '#51cf66' },
-  civilization: { label: 'Civilization', color: '#74c0fc' },
-  mining: { label: 'Mining', color: '#ffd43b' },
-  industrial: { label: 'Industrial', color: '#da77f2' },
-  strategic: { label: 'Strategic', color: '#ff6b6b' },
+  balanced: { label: 'Throne World', color: '#c9a227' },
+  farming: { label: 'Vitae Belt', color: '#5a9e6f' },
+  civilization: { label: 'Megacity', color: '#6ec4d8' },
+  mining: { label: 'Stratum Rich', color: '#d4a843' },
+  industrial: { label: 'Forge Orbit', color: '#9b7ec8' },
+  strategic: { label: 'Void Chokepoint', color: '#c44b4b' },
 }
+
+export const ENEMY_FACTIONS: EnemyFaction[] = FACTION_LORE
 
 export const PLANET_TYPE_INFO: Record<PlanetType, PlanetTypeInfo> = {
   terran: {
     name: 'Terran',
     icon: '🌍',
-    description: 'Earth-like world with balanced resources and comfortable living conditions.',
+    description: 'A throne-world of the Golden Age — balanced strata, lumin, and vitae in sacred proportion.',
     specialization: 'balanced',
     mineralBonus: 1.0,
     energyBonus: 1.0,
@@ -325,22 +329,15 @@ export function getPlanetTypeSummary(type: PlanetType): string {
   const info = PLANET_TYPE_INFO[type]
   const spec = PLANET_SPECIALIZATION_LABELS[info.specialization].label
   if (info.specialization === 'strategic') {
-    return `${spec} · Low survivability · Trade route control`
+    return `${spec} · Low survivability · Void road control`
   }
   return `${spec} · Survivability ${Math.round(info.survivability * 100)}%`
 }
 
-export const ENEMY_FACTIONS: EnemyFaction[] = [
-  { id: 'kryll', name: 'Kryll Dominion', color: '#e74c3c', aggression: 0.7 },
-  { id: 'vexar', name: 'Vexar Collective', color: '#9b59b6', aggression: 0.5 },
-  { id: 'zynthian', name: 'Zynthian Empire', color: '#2ecc71', aggression: 0.4 },
-  { id: 'pirates', name: 'Outer Rim Pirates', color: '#f39c12', aggression: 0.8 },
-]
-
 export const ENEMY_PLANETS: Omit<Planet, 'buildings' | 'defenseRating'>[] = [
   {
     id: 'kryll-prime',
-    name: 'Kryll Prime',
+    name: PLANET_LORE_NAMES['kryll-prime'].name,
     type: 'volcanic',
     owner: 'enemy',
     enemyFaction: 'kryll',
@@ -349,7 +346,7 @@ export const ENEMY_PLANETS: Omit<Planet, 'buildings' | 'defenseRating'>[] = [
   },
   {
     id: 'vexar-nexus',
-    name: 'Vexar Nexus',
+    name: PLANET_LORE_NAMES['vexar-nexus'].name,
     type: 'gasGiant',
     owner: 'enemy',
     enemyFaction: 'vexar',
@@ -358,7 +355,7 @@ export const ENEMY_PLANETS: Omit<Planet, 'buildings' | 'defenseRating'>[] = [
   },
   {
     id: 'zynthia',
-    name: 'Zynthia',
+    name: PLANET_LORE_NAMES.zynthia.name,
     type: 'habitable',
     owner: 'enemy',
     enemyFaction: 'zynthian',
@@ -367,7 +364,7 @@ export const ENEMY_PLANETS: Omit<Planet, 'buildings' | 'defenseRating'>[] = [
   },
   {
     id: 'azure-depths',
-    name: 'Azure Depths',
+    name: PLANET_LORE_NAMES['azure-depths'].name,
     type: 'oceanic',
     owner: 'enemy',
     enemyFaction: 'zynthian',
@@ -376,7 +373,7 @@ export const ENEMY_PLANETS: Omit<Planet, 'buildings' | 'defenseRating'>[] = [
   },
   {
     id: 'pirate-haven',
-    name: 'Pirate Haven',
+    name: PLANET_LORE_NAMES['pirate-haven'].name,
     type: 'jungle',
     owner: 'enemy',
     enemyFaction: 'pirates',
@@ -385,7 +382,7 @@ export const ENEMY_PLANETS: Omit<Planet, 'buildings' | 'defenseRating'>[] = [
   },
   {
     id: 'kryll-outpost',
-    name: 'Kryll Outpost',
+    name: PLANET_LORE_NAMES['kryll-outpost'].name,
     type: 'asteroid',
     owner: 'enemy',
     enemyFaction: 'kryll',
@@ -394,7 +391,7 @@ export const ENEMY_PLANETS: Omit<Planet, 'buildings' | 'defenseRating'>[] = [
   },
   {
     id: 'sentinel-drift',
-    name: 'Sentinel Drift',
+    name: PLANET_LORE_NAMES['sentinel-drift'].name,
     type: 'barren',
     owner: 'enemy',
     enemyFaction: 'pirates',
@@ -403,7 +400,7 @@ export const ENEMY_PLANETS: Omit<Planet, 'buildings' | 'defenseRating'>[] = [
   },
   {
     id: 'vexar-shard',
-    name: 'Vexar Shard',
+    name: PLANET_LORE_NAMES['vexar-shard'].name,
     type: 'crystalline',
     owner: 'enemy',
     enemyFaction: 'vexar',
@@ -412,7 +409,7 @@ export const ENEMY_PLANETS: Omit<Planet, 'buildings' | 'defenseRating'>[] = [
   },
   {
     id: 'toxica-iv',
-    name: 'Toxica IV',
+    name: PLANET_LORE_NAMES['toxica-iv'].name,
     type: 'toxic',
     owner: 'enemy',
     enemyFaction: 'kryll',

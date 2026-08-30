@@ -16,6 +16,7 @@ import {
   subtractResources,
 } from '../game/engine'
 import { createInitialState } from '../game/initialState'
+import { WIN_CHRONICLE } from '../game/lore'
 import type { BuildingType, Fleet, GameState, ShipType } from '../game/types'
 import { useBattleStore } from './battleStore'
 
@@ -103,7 +104,7 @@ export const useGameStore = create<GameStore>()(
           events: [
             createEvent(
               'success',
-              `Upgraded ${info.name} to level ${currentLevel + 1} on ${planet.name}`
+              `Archaeotech upgraded: ${info.name} now at tier ${currentLevel + 1} on ${planet.name}.`
             ),
             ...state.events.slice(0, 49),
           ],
@@ -119,7 +120,10 @@ export const useGameStore = create<GameStore>()(
         if (shipyards === 0) {
           set({
             events: [
-              createEvent('warning', 'Build a Shipyard before constructing ships.'),
+              createEvent(
+                'warning',
+                'No Void Forge Annexe detected. Construct one before commissioning voidships.'
+              ),
               ...state.events.slice(0, 49),
             ],
           })
@@ -133,7 +137,7 @@ export const useGameStore = create<GameStore>()(
           resources: subtractResources(state.resources, cost),
           fleet: { ...state.fleet, [shipType]: state.fleet[shipType] + 1 },
           events: [
-            createEvent('success', `Built a ${SHIP_INFO[shipType].name}`),
+            createEvent('success', `${SHIP_INFO[shipType].name} commissioned into the armada.`),
             ...state.events.slice(0, 49),
           ],
         })
@@ -148,7 +152,10 @@ export const useGameStore = create<GameStore>()(
         if (totalShips === 0) {
           set({
             events: [
-              createEvent('warning', 'You need ships to attack! Build a fleet first.'),
+              createEvent(
+                'warning',
+                'The void armada stands empty. Commission voidships before issuing a mandate of conquest.'
+              ),
               ...state.events.slice(0, 49),
             ],
           })
@@ -182,17 +189,15 @@ export const useGameStore = create<GameStore>()(
         if (enemyRemaining === 0) gameWon = true
 
         const events = [
-          createEvent('success', `Victory! ${target.name} has been conquered!`),
+          createEvent(
+            'success',
+            `Mandate secured. ${target.name} now acknowledges Throne law.`
+          ),
           ...state.events.slice(0, 49),
         ]
 
         if (gameWon) {
-          events.unshift(
-            createEvent(
-              'success',
-              'Victory! You have conquered the galaxy and unified all worlds under your empire!'
-            )
-          )
+          events.unshift(createEvent('success', WIN_CHRONICLE))
         }
 
         set({ fleet: newFleet, planets, events, gameWon })
@@ -209,7 +214,10 @@ export const useGameStore = create<GameStore>()(
         set({
           fleet: newFleet,
           events: [
-            createEvent('warning', `Retreat from ${planetName}. Ground forces withdrawn.`),
+            createEvent(
+              'warning',
+              `Strategic withdrawal from ${planetName}. Ground legions recalled to the void.`
+            ),
             ...state.events.slice(0, 49),
           ],
         })
@@ -225,7 +233,10 @@ export const useGameStore = create<GameStore>()(
         set({
           fleet: newFleet,
           events: [
-            createEvent('danger', `Defeat at ${planetName}. Your assault force was annihilated.`),
+            createEvent(
+              'danger',
+              `Mandate broken at ${planetName}. The assault cadre has been annihilated.`
+            ),
             ...state.events.slice(0, 49),
           ],
         })
@@ -284,7 +295,7 @@ export const useGameStore = create<GameStore>()(
       setEmpireName: (name) => set({ empireName: name }),
     }),
     {
-      name: 'galactic-empire-save',
+      name: 'galactic-empire-save-v2',
       partialize: (state) => ({
         empireName: state.empireName,
         tickCount: state.tickCount,

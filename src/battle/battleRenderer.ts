@@ -2,9 +2,9 @@ import type { BattleState, BattleUnit } from './types'
 
 const TEAM_COLORS = {
   player: {
-    armor: '#3d5a73',
+    armor: '#3d4f63',
     trim: '#c9a227',
-    visor: '#7ee8fa',
+    visor: '#6ec4d8',
     gun: '#8b9bb4',
   },
   enemy: {

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { LORE } from '../game/lore'
 import { getSurvivalRatio } from '../battle/battleLogic'
 import { canvasToBattleCoords, renderBattle } from '../battle/battleRenderer'
 import { useBattleStore } from '../store/battleStore'
@@ -129,15 +130,13 @@ export function BattleOverlay() {
       <div className="battle-frame">
         <header className="battle-header">
           <div>
-            <h2>Ground Assault — {battle.planetName}</h2>
-            <p className="battle-subtitle">
-              Archaeotech legions deploy against planetary defenders
-            </p>
+            <h2>{LORE.battle.assaultTitle} — {battle.planetName}</h2>
+            <p className="battle-subtitle">{LORE.battle.assaultSubtitle}</p>
           </div>
           <div className="battle-hud">
-            <span className="hud-player">Legion: {playerAlive}</span>
+            <span className="hud-player">{LORE.battle.legionLabel}: {playerAlive}</span>
             <span className="hud-enemy" style={{ color: battle.enemyColor }}>
-              Hostiles: {enemyAlive}
+              {LORE.battle.hostilesLabel}: {enemyAlive}
             </span>
             {selectedCount > 0 && (
               <span className="hud-selected">Selected: {selectedCount}</span>
@@ -205,14 +204,14 @@ export function BattleOverlay() {
 
           {battle.status === 'victory' && (
             <div className="battle-result victory">
-              <h3>Victory</h3>
-              <p>The world falls to your legions.</p>
+              <h3>{LORE.battle.victory}</h3>
+              <p>{LORE.battle.victoryMessage}</p>
             </div>
           )}
           {battle.status === 'defeat' && (
             <div className="battle-result defeat">
-              <h3>Defeat</h3>
-              <p>Your assault force has been annihilated.</p>
+              <h3>{LORE.battle.defeat}</h3>
+              <p>{LORE.battle.defeatMessage}</p>
             </div>
           )}
         </div>

@@ -1,4 +1,5 @@
 import { SHIP_INFO } from '../game/constants'
+import { LORE } from '../game/lore'
 import type { ShipType } from '../game/types'
 import { useFleetPower, useGameStore } from '../store/gameStore'
 
@@ -12,14 +13,14 @@ export function FleetPanel() {
 
   return (
     <section className="panel fleet-panel">
-      <h2>Fleet Command</h2>
+      <h2>{LORE.fleetTitle}</h2>
       <div className="fleet-summary">
-        <span>Total Ships: {totalShips}</span>
-        <span>Combat Power: {fleetPower}</span>
+        <span>Voidships Commissioned: {totalShips}</span>
+        <span>Armada Strength: {fleetPower}</span>
       </div>
 
       <div className="fleet-inventory">
-        <h3>Current Fleet</h3>
+        <h3>Active Armada</h3>
         <div className="ship-counts">
           {(Object.keys(fleet) as ShipType[]).map((type) => (
             <div key={type} className="ship-count">
@@ -32,7 +33,7 @@ export function FleetPanel() {
       </div>
 
       <div className="shipyard">
-        <h3>Construct Ships</h3>
+        <h3>Void Forge Commission</h3>
         <div className="ship-grid">
           {(Object.keys(SHIP_INFO) as ShipType[]).map((type) => {
             const info = SHIP_INFO[type]
@@ -48,7 +49,7 @@ export function FleetPanel() {
                 <div className="ship-info">
                   <h4>{info.name}</h4>
                   <p>{info.description}</p>
-                  <span className="ship-power">Power: {info.attackPower}</span>
+                  <span className="ship-power">Armada Value: {info.attackPower}</span>
                 </div>
                 <button
                   className="btn btn-build"
@@ -57,9 +58,9 @@ export function FleetPanel() {
                 >
                   <span className="cost">
                     ⛏️{info.cost.minerals} ⚡{info.cost.energy}
-                    {info.cost.credits > 0 && ` 💰${info.cost.credits}`}
+                    {info.cost.credits > 0 && ` ⚜️${info.cost.credits}`}
                   </span>
-                  Build
+                  Commission
                 </button>
               </div>
             )

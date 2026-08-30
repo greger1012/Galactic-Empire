@@ -78,6 +78,9 @@ export interface Fleet {
 export interface EnemyFaction {
   id: string
   name: string
+  shortName: string
+  motto: string
+  description: string
   color: string
   aggression: number
 }

@@ -1,5 +1,7 @@
-import { BUILDING_INFO, PLANET_SPECIALIZATION_LABELS, PLANET_TYPE_INFO } from '../game/constants'
+import { BUILDING_INFO, ENEMY_FACTIONS, PLANET_SPECIALIZATION_LABELS, PLANET_TYPE_INFO } from '../game/constants'
 import { getBuildingCost, getBuildingLevel } from '../game/engine'
+import { LORE } from '../game/lore'
+import { getPlanetEpithet } from '../game/names'
 import type { BuildingType } from '../game/types'
 import { useGameStore } from '../store/gameStore'
 import { useProductionRates } from '../store/gameStore'
@@ -25,15 +27,22 @@ export function PlanetPanel() {
   const specInfo = PLANET_SPECIALIZATION_LABELS[typeInfo.specialization]
   const isPlayer = planet.owner === 'player'
 
+  const faction = planet.enemyFaction
+    ? ENEMY_FACTIONS.find((f) => f.id === planet.enemyFaction)
+    : undefined
+  const epithet = getPlanetEpithet(planet.id)
+
   return (
     <section className="panel planet-panel">
       <div className="planet-header">
         <span className="planet-icon">{typeInfo.icon}</span>
         <div>
           <h2>{planet.name}</h2>
+          {epithet && <p className="planet-epithet">{epithet}</p>}
           <p className="planet-meta">
-            {typeInfo.name} · {planet.owner === 'player' ? 'Your Territory' : 'Enemy World'}
-            {planet.enemyFaction && ` · ${planet.enemyFaction}`}
+            {typeInfo.name} ·{' '}
+            {planet.owner === 'player' ? LORE.ownership.player : LORE.ownership.enemy}
+            {faction && ` · ${faction.shortName}`}
           </p>
           <span
             className="planet-specialization"
@@ -91,7 +100,7 @@ export function PlanetPanel() {
           </span>
         </div>
         <div className="stat">
-          <span className="stat-label">Defense</span>
+          <span className="stat-label">Aegis Rating</span>
           <span className="stat-value">{planet.defenseRating}</span>
         </div>
         {isPlayer && (
@@ -117,7 +126,7 @@ export function PlanetPanel() {
 
       {isPlayer && (
         <div className="buildings">
-          <h3>Infrastructure</h3>
+          <h3>{LORE.infrastructureTitle}</h3>
           <div className="building-grid">
             {(Object.keys(BUILDING_INFO) as BuildingType[]).map((type) => {
               const info = BUILDING_INFO[type]

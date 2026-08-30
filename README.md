@@ -1,6 +1,6 @@
-# Galactic Empire
+# Ascendancy of Iron Suns
 
-A browser-based space empire strategy game. Start with a single planet, extract resources, build infrastructure, raise a fleet, and conquer the galaxy.
+A browser-based space empire strategy game set during humanity's Golden Age of Archaeotech. Command the Solar Ascendancy from your throne-world, extract adamant and lumin, commission voidships, and reclaim the fractured stars.
 
 ## How to Play
 

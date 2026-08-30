@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { TICK_INTERVAL_MS } from '../game/constants'
+import { LORE } from '../game/lore'
 import { useBattleStore } from '../store/battleStore'
 import { useGameStore } from '../store/gameStore'
 import { BattleOverlay } from './BattleOverlay'
@@ -25,12 +26,13 @@ export function Game() {
   return (
     <div className="game">
       <div className="stars" />
+      <div className="scanlines" />
       <ResourceBar />
 
       {gameWon && (
         <div className="victory-banner">
-          <h2>🏆 Galactic Victory!</h2>
-          <p>You have united the galaxy under your rule.</p>
+          <h2>☀️ {LORE.victoryTitle}</h2>
+          <p>{LORE.victoryMessage}</p>
         </div>
       )}
 
@@ -46,7 +48,10 @@ export function Game() {
       </main>
 
       <footer className="game-footer">
-        <p>Cycle {tickCount} · Resources update every second · Conquer all enemy worlds to win</p>
+        <p>
+          {LORE.cycleLabel} {tickCount} · Noospheric feeds update each cycle · Reclaim all
+          contested mandates to restore the Golden Age
+        </p>
       </footer>
 
       <BattleOverlay />

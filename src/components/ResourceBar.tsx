@@ -1,3 +1,4 @@
+import { LORE } from '../game/lore'
 import type { ResourceType } from '../game/types'
 import { useGameStore } from '../store/gameStore'
 
@@ -5,14 +6,7 @@ const RESOURCE_ICONS: Record<ResourceType, string> = {
   minerals: '⛏️',
   energy: '⚡',
   food: '🌾',
-  credits: '💰',
-}
-
-const RESOURCE_LABELS: Record<ResourceType, string> = {
-  minerals: 'Minerals',
-  energy: 'Energy',
-  food: 'Food',
-  credits: 'Credits',
+  credits: '⚜️',
 }
 
 export function ResourceBar() {
@@ -24,20 +18,27 @@ export function ResourceBar() {
   return (
     <header className="resource-bar">
       <div className="empire-info">
+        <span className="empire-mandate">{LORE.empireTitle}</span>
         <h1 className="empire-name">{empireName}</h1>
-        <span className="tick-counter">Cycle {tickCount}</span>
+        <span className="tick-counter">
+          {LORE.cycleLabel} {tickCount} · {LORE.gameSubtitle}
+        </span>
       </div>
       <div className="resources">
         {(Object.keys(resources) as ResourceType[]).map((key) => (
-          <div key={key} className="resource-item">
+          <div
+            key={key}
+            className="resource-item"
+            title={LORE.resourceDescriptions[key]}
+          >
             <span className="resource-icon">{RESOURCE_ICONS[key]}</span>
-            <span className="resource-label">{RESOURCE_LABELS[key]}</span>
+            <span className="resource-label">{LORE.resourceLabels[key]}</span>
             <span className="resource-value">{Math.floor(resources[key])}</span>
           </div>
         ))}
       </div>
-      <button className="btn btn-ghost" onClick={resetGame} title="Start new game">
-        New Game
+      <button className="btn btn-ghost" onClick={resetGame} title="Begin a new mandate">
+        New Mandate
       </button>
     </header>
   )
