@@ -19,14 +19,16 @@ export const LORE = {
 
   victoryTitle: 'Mandate Fulfilled',
   victoryMessage:
-    'The fractured void kneels before the Iron Suns. A new chapter of the Golden Age begins.',
+    'The founding sector kneels before the Iron Suns. Historians will call this the Second Dawn.',
   masteryVictoryTitle: 'Mandate of Mastery',
   masteryVictoryMessage:
-    'Three great chronicle mandates stand fulfilled. The Golden Age expands by brilliance as much as by conquest.',
+    'Three great chronicle mandates stand fulfilled. Brilliance and dominion now walk in equal step.',
+  victoryContinueMessage:
+    'The mandate does not end here. Cartographers will chart endless void frontiers — conquer, colonize, and innovate without limit.',
 
   chroniclePanelTitle: 'Imperial Chronicles',
   chroniclePanelSubtitle:
-    'Fulfill three mandates to proclaim a Mandate of Mastery — or conquer every contested world.',
+    'Fulfill three mandates for Mastery — or annex the founding sector. Beyond either triumph, procedural void frontiers await.',
 
   resourceLabels: {
     minerals: 'Adamant',
@@ -134,5 +136,5 @@ export const OPENING_CHRONICLE =
   'Raise cutting-edge infrastructure, commission void warships, and bring the contested stars under a single mandate.'
 
 export const WIN_CHRONICLE =
-  'Mandate absolute. Every contested world now flies the Iron Sun banner. ' +
-  'Historians will call this the Second Dawn — the moment the Ascendancy became the Galaxy.'
+  'Mandate absolute in the founding sector. Every contested world now flies the Iron Sun banner. ' +
+  'Survey beacons already plot the next void frontier — the Golden Age advances, not concludes.'

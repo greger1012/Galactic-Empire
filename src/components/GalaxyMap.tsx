@@ -1,5 +1,6 @@
 import { ENEMY_FACTIONS, PLANET_TYPE_INFO, getPlanetTypeSummary } from '../game/constants'
 import { LORE } from '../game/lore'
+import { getPlanetMapPosition } from '../game/frontierGeneration'
 import { getPlanetEpithet } from '../game/names'
 import type { Planet } from '../game/types'
 import { getMandateFocus } from '../game/mandateGuide'
@@ -15,6 +16,7 @@ export function GalaxyMap() {
 
   const playerPlanets = planets.filter((p) => p.owner === 'player')
   const enemyPlanets = planets.filter((p) => p.owner === 'enemy')
+  const frontierWave = useGameStore((s) => s.frontier.wave)
 
   const selectedPlanet = planets.find((p) => p.id === selectedPlanetId)
   const selectedFaction = selectedPlanet?.enemyFaction
@@ -27,17 +29,17 @@ export function GalaxyMap() {
       <div className="galaxy-stats">
         <span className="player-count">Throne Worlds: {playerPlanets.length}</span>
         <span className="enemy-count">Contested: {enemyPlanets.length}</span>
+        {frontierWave > 0 && (
+          <span className="frontier-count">Void Frontier: {frontierWave}</span>
+        )}
       </div>
 
       <div className="galaxy-map">
-        {planets.map((planet: Planet, index: number) => {
+        {planets.map((planet: Planet) => {
           const typeInfo = PLANET_TYPE_INFO[planet.type]
           const faction = ENEMY_FACTIONS.find((f) => f.id === planet.enemyFaction)
           const isSelected = planet.id === selectedPlanetId
-          const angle = (index / planets.length) * Math.PI * 2
-          const radius = planet.owner === 'player' ? 60 : 140
-          const x = 50 + Math.cos(angle) * radius * 0.35
-          const y = 50 + Math.sin(angle) * radius * 0.35
+          const { x, y } = getPlanetMapPosition(planet)
 
           return (
             <button
@@ -65,8 +67,10 @@ export function GalaxyMap() {
       {selectedPlanet && (
         <div className="planet-actions">
           <h3>{selectedPlanet.name}</h3>
-          {getPlanetEpithet(selectedPlanet.id) && (
-            <p className="planet-epithet">{getPlanetEpithet(selectedPlanet.id)}</p>
+          {getPlanetEpithet(selectedPlanet.id, selectedPlanet.epithet) && (
+            <p className="planet-epithet">
+              {getPlanetEpithet(selectedPlanet.id, selectedPlanet.epithet)}
+            </p>
           )}
           {selectedFaction && (
             <p className="faction-lore">

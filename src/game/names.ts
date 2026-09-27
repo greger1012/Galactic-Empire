@@ -82,6 +82,9 @@ export function getPlanetDisplayName(planetId: string, fallback: string): string
   return PLANET_LORE_NAMES[planetId]?.name ?? fallback
 }
 
-export function getPlanetEpithet(planetId: string): string | undefined {
-  return PLANET_LORE_NAMES[planetId]?.epithet
+export function getPlanetEpithet(
+  planetId: string,
+  planetEpithet?: string
+): string | undefined {
+  return planetEpithet ?? PLANET_LORE_NAMES[planetId]?.epithet
 }

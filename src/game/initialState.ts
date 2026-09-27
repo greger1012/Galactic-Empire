@@ -1,5 +1,6 @@
 import { ENEMY_PLANETS, createEnemyPlanet, getPlanetMaxPopulation } from './constants'
 import { DEFAULT_CHRONICLE_STATE } from './chronicleMandates'
+import { DEFAULT_FRONTIER } from './frontierGeneration'
 import { DEFAULT_MANDATE_GUIDE } from './mandateGuide'
 import { LORE, OPENING_CHRONICLE } from './lore'
 import { PLANET_LORE_NAMES } from './names'
@@ -58,5 +59,7 @@ export function createInitialState(): GameState {
     victoryKind: null,
     gameWon: false,
     gameOver: false,
+    frontier: { ...DEFAULT_FRONTIER },
+    victoryBannerDismissed: false,
   }
 }

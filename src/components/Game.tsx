@@ -18,6 +18,9 @@ export function Game() {
   const tickCount = useGameStore((s) => s.tickCount)
   const gameWon = useGameStore((s) => s.gameWon)
   const victoryKind = useGameStore((s) => s.victoryKind)
+  const victoryBannerDismissed = useGameStore((s) => s.victoryBannerDismissed)
+  const dismissVictoryBanner = useGameStore((s) => s.dismissVictoryBanner)
+  const frontierWave = useGameStore((s) => s.frontier.wave)
   const battleActive = useBattleStore((s) => s.battle?.active ?? false)
   const orbitalActive = useBattleStore((s) => s.orbital?.active ?? false)
   const invasionPaused = battleActive || orbitalActive
@@ -38,7 +41,7 @@ export function Game() {
       <div className="scanlines" />
       <ResourceBar />
 
-      {gameWon && (
+      {gameWon && !victoryBannerDismissed && (
         <div className="victory-banner">
           <h2>
             ☀️{' '}
@@ -47,6 +50,10 @@ export function Game() {
           <p>
             {victoryKind === 'mastery' ? LORE.masteryVictoryMessage : LORE.victoryMessage}
           </p>
+          <p className="victory-continue">{LORE.victoryContinueMessage}</p>
+          <button type="button" className="btn btn-secondary victory-dismiss" onClick={dismissVictoryBanner}>
+            Continue the Endless Mandate
+          </button>
         </div>
       )}
 
@@ -66,8 +73,9 @@ export function Game() {
 
       <footer className="game-footer">
         <p>
-          {LORE.cycleLabel} {tickCount} · Rival mandates stir every 15 cycles · Reclaim all
-          contested worlds to extend the Golden Age
+          {LORE.cycleLabel} {tickCount}
+          {frontierWave > 0 ? ` · Void Frontier ${frontierWave}` : ''} · Rival mandates stir every
+          15 cycles · Clear each sector to chart the next procedural void
           {mandateDismissed && (
             <>
               {' '}

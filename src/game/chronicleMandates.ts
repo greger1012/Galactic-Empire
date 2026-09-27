@@ -116,6 +116,7 @@ export interface ChronicleSyncResult {
   events: GameEvent[]
   gameWon: boolean
   victoryKind: VictoryKind | null
+  victoryBannerDismissed?: boolean
 }
 
 export function syncChronicleMandates(state: GameState): ChronicleSyncResult {
@@ -143,6 +144,8 @@ export function syncChronicleMandates(state: GameState): ChronicleSyncResult {
     ]
   }
 
+  let victoryBannerDismissed: boolean | undefined
+
   if (
     !gameWon &&
     chronicle.completed.length >= MASTERY_MANDATE_COUNT &&
@@ -150,15 +153,16 @@ export function syncChronicleMandates(state: GameState): ChronicleSyncResult {
   ) {
     gameWon = true
     victoryKind = 'mastery'
+    victoryBannerDismissed = false
     events = [
       createEvent('success', MASTERY_CHRONICLE),
       ...events.slice(0, 49),
     ]
   }
 
-  return { chronicle, resources, events, gameWon, victoryKind }
+  return { chronicle, resources, events, gameWon, victoryKind, victoryBannerDismissed }
 }
 
 export const MASTERY_CHRONICLE =
   'Mandate of Mastery proclaimed. The Golden Age flourishes through innovation and dominion — ' +
-  'the void acknowledges Solar Ascendancy supremacy without requiring every star be conquered.'
+  'and the cartographers stand ready to chart infinite void frontiers beyond this triumph.'

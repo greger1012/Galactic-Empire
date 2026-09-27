@@ -678,6 +678,20 @@
   margin: 0 auto;
 }
 
+.victory-banner .victory-continue {
+  margin-top: 0.75rem;
+  font-style: normal;
+  font-size: 0.95rem;
+}
+
+.victory-banner .victory-dismiss {
+  margin-top: 1rem;
+}
+
+.galaxy-stats .frontier-count {
+  color: var(--accent-bright);
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.85; }

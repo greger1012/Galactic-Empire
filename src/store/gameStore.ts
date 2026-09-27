@@ -21,6 +21,7 @@ import {
 import { runFactionPulse } from '../game/factionPulse'
 import { createInitialState } from '../game/initialState'
 import { DEFAULT_CHRONICLE_STATE, syncChronicleMandates } from '../game/chronicleMandates'
+import { mergeFrontierState, spawnNextFrontierWave } from '../game/frontierGeneration'
 import { DEFAULT_MANDATE_GUIDE } from '../game/mandateGuide'
 import { WIN_CHRONICLE } from '../game/lore'
 import {
@@ -48,6 +49,7 @@ interface GameActions {
   setEmpireName: (name: string) => void
   dismissMandateGuide: () => void
   reopenMandateGuide: () => void
+  dismissVictoryBanner: () => void
   applyOrbitalEngagementResult: (
     losses: Partial<Fleet>,
     result: OrbitalEngagementResult,
@@ -308,7 +310,7 @@ export const useGameStore = create<GameStore>()(
 
         const casualtyRate = Math.min(0.7, Math.max(0.1, 1 - survivalRatio * 0.85))
         const newFleet = applyFleetCasualties(state.fleet, casualtyRate)
-        const planets = conquerPlanet(
+        let planets = conquerPlanet(
           state.planets,
           planetId,
           getTechModifiers(state.research.researched)
@@ -316,10 +318,22 @@ export const useGameStore = create<GameStore>()(
         let gameWon = state.gameWon
         let victoryKind = state.victoryKind
 
-        const enemyRemaining = planets.filter((p) => p.owner === 'enemy').length
-        if (enemyRemaining === 0) {
+        let enemyRemaining = planets.filter((p) => p.owner === 'enemy').length
+        const firstSectorConquest = enemyRemaining === 0 && !state.gameWon
+        if (enemyRemaining === 0 && victoryKind !== 'mastery') {
           gameWon = true
-          victoryKind = 'conquest'
+          if (!victoryKind) victoryKind = 'conquest'
+        }
+
+        let frontier = state.frontier
+        let spawnEvents: typeof state.events = []
+
+        if (enemyRemaining === 0) {
+          const spawned = spawnNextFrontierWave(planets, frontier)
+          planets = spawned.planets
+          frontier = spawned.frontier
+          spawnEvents = spawned.events
+          enemyRemaining = planets.filter((p) => p.owner === 'enemy').length
         }
 
         const events = [
@@ -327,10 +341,11 @@ export const useGameStore = create<GameStore>()(
             'success',
             `Mandate secured. ${target.name} now acknowledges Throne law.`
           ),
+          ...spawnEvents,
           ...state.events.slice(0, 49),
         ]
 
-        if (victoryKind === 'conquest' && gameWon) {
+        if (firstSectorConquest && victoryKind === 'conquest') {
           events.unshift(createEvent('success', WIN_CHRONICLE))
         }
 
@@ -338,9 +353,13 @@ export const useGameStore = create<GameStore>()(
           chroniclePatch(state, {
             fleet: newFleet,
             planets,
+            frontier,
             events,
             gameWon,
             victoryKind,
+            victoryBannerDismissed: firstSectorConquest
+              ? false
+              : state.victoryBannerDismissed,
           })
         )
       },
@@ -386,7 +405,7 @@ export const useGameStore = create<GameStore>()(
 
       advanceTick: () => {
         const state = get()
-        if (state.gameWon || state.gameOver) return
+        if (state.gameOver) return
         const battleStore = useBattleStore.getState()
         if (battleStore.battle?.active || battleStore.orbital?.active) return
 
@@ -487,6 +506,8 @@ export const useGameStore = create<GameStore>()(
 
       reopenMandateGuide: () =>
         set((s) => ({ mandateGuide: { ...s.mandateGuide, dismissed: false } })),
+
+      dismissVictoryBanner: () => set({ victoryBannerDismissed: true }),
     }),
     {
       name: 'galactic-empire-save-v2',
@@ -504,16 +525,37 @@ export const useGameStore = create<GameStore>()(
         victoryKind: state.victoryKind,
         gameWon: state.gameWon,
         gameOver: state.gameOver,
+        frontier: state.frontier,
+        victoryBannerDismissed: state.victoryBannerDismissed,
       }),
       merge: (persisted, current) => {
         const saved = (persisted ?? {}) as Partial<GameState>
+        const planets = saved.planets ?? current.planets
+        const frontier = mergeFrontierState(saved.frontier)
+        let mergedPlanets = planets
+        let mergedFrontier = frontier
+        let extraEvents: GameState['events'] = []
+
+        if (planets.filter((p) => p.owner === 'enemy').length === 0) {
+          const spawned = spawnNextFrontierWave(planets, frontier)
+          mergedPlanets = spawned.planets
+          mergedFrontier = spawned.frontier
+          extraEvents = spawned.events
+        }
+
         return {
           ...current,
           ...saved,
+          planets: mergedPlanets,
+          frontier: mergedFrontier,
+          events: extraEvents.length > 0
+            ? [...extraEvents, ...(saved.events ?? current.events)].slice(0, 50)
+            : (saved.events ?? current.events),
           research: saved.research ?? DEFAULT_RESEARCH,
           mandateGuide: saved.mandateGuide ?? DEFAULT_MANDATE,
           chronicle: saved.chronicle ?? { completed: [...DEFAULT_CHRONICLE.completed] },
           victoryKind: saved.victoryKind ?? null,
+          victoryBannerDismissed: saved.victoryBannerDismissed ?? false,
         }
       },
     }

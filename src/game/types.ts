@@ -66,6 +66,15 @@ export interface Planet {
   maxPopulation: number
   buildings: Building[]
   defenseRating: number
+  /** Procedural frontier worlds carry display epithets in save data. */
+  epithet?: string
+  procedural?: boolean
+  frontierWave?: number
+}
+
+export interface FrontierState {
+  wave: number
+  sectorSeed: number
 }
 
 export interface Fleet {
@@ -137,4 +146,6 @@ export interface GameState {
   victoryKind: VictoryKind | null
   gameWon: boolean
   gameOver: boolean
+  frontier: FrontierState
+  victoryBannerDismissed: boolean
 }
