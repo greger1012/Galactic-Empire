@@ -815,6 +815,16 @@
   color: #ff6b6b;
 }
 
+.hud-roster {
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  max-width: 220px;
+  text-align: right;
+  line-height: 1.2;
+}
+
 .btn-retreat {
   background: rgba(100, 116, 139, 0.2);
   border: 1px solid var(--border);

@@ -6,9 +6,21 @@ export type UnitAnimState = 'idle' | 'moving' | 'shooting' | 'dying' | 'dead'
 
 export type CoverLevel = 'none' | 'half' | 'full'
 
+export type HostileArchetype = 'line' | 'heavy' | 'skirmisher' | 'bulwark'
+
+export type UnitArchetype =
+  | 'legionLine'
+  | 'legionVeteran'
+  | 'hostileLine'
+  | 'hostileHeavy'
+  | 'hostileSkirmisher'
+  | 'hostileBulwark'
+
 export interface BattleUnit {
   id: string
   team: BattleTeam
+  archetype: UnitArchetype
+  factionId?: string
   label: string
   x: number
   y: number
@@ -79,6 +91,8 @@ export interface BattleState {
   planetId: string
   planetName: string
   planetType: PlanetType
+  enemyFactionId?: string
+  hostileRosterName: string
   enemyColor: string
   /** Multiplier on suppression duration applied to player legionnaires (tech-driven). */
   playerSuppressionMult: number

@@ -147,6 +147,9 @@ export function BattleOverlay() {
             <span className="hud-enemy" style={{ color: battle.enemyColor }}>
               {LORE.battle.hostilesLabel}: {enemyAlive}
             </span>
+            <span className="hud-roster" style={{ color: battle.enemyColor }}>
+              {battle.hostileRosterName}
+            </span>
             {selectedCount > 0 && (
               <span className="hud-selected">Selected: {selectedCount}</span>
             )}

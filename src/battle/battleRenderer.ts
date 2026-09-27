@@ -1,20 +1,6 @@
 import { BIOMES, type Biome } from './biomes'
+import { drawBattleUnit } from './unitVisuals'
 import type { BattleCover, BattleState, BattleUnit } from './types'
-
-const TEAM_COLORS = {
-  player: {
-    armor: '#3d4f63',
-    trim: '#c9a227',
-    visor: '#6ec4d8',
-    gun: '#8b9bb4',
-  },
-  enemy: {
-    armor: '#4a3038',
-    trim: '#8b3a3a',
-    visor: '#ff6b4a',
-    gun: '#6b5058',
-  },
-}
 
 /** Stable per-cover jitter so organic shapes don't flicker between frames. */
 function coverHash(cover: BattleCover): number {
@@ -145,100 +131,6 @@ function drawAmbientParticles(
   ctx.globalAlpha = 1
 }
 
-function drawTopDownSoldier(ctx: CanvasRenderingContext2D, unit: BattleUnit): void {
-  if (unit.state === 'dead') return
-
-  const colors = TEAM_COLORS[unit.team]
-  const dying = unit.state === 'dying'
-  const alpha = dying ? Math.max(0, 1 - unit.stateTimer) : 1
-
-  ctx.save()
-  ctx.translate(unit.x, unit.y)
-  ctx.rotate(unit.facing)
-  ctx.globalAlpha = alpha
-
-  const walkBob =
-    unit.state === 'moving' ? Math.sin(unit.animFrame * 2) * 1.5 : 0
-  const shootRecoil = unit.state === 'shooting' ? -2 : 0
-
-  ctx.fillStyle = 'rgba(0,0,0,0.35)'
-  ctx.beginPath()
-  ctx.ellipse(2, 4, 11, 7, 0, 0, Math.PI * 2)
-  ctx.fill()
-
-  const legSwing = unit.state === 'moving' ? Math.sin(unit.animFrame * 2) * 4 : 0
-  ctx.fillStyle = '#2a3544'
-  ctx.fillRect(-4 + legSwing, 4 + walkBob, 4, 8)
-  ctx.fillRect(0 - legSwing, 4 + walkBob, 4, 8)
-
-  ctx.fillStyle = colors.armor
-  ctx.strokeStyle = colors.trim
-  ctx.lineWidth = 1.5
-  ctx.beginPath()
-  ctx.roundRect(-9, -6 + walkBob, 18, 14, 3)
-  ctx.fill()
-  ctx.stroke()
-
-  ctx.fillStyle = colors.trim
-  ctx.beginPath()
-  ctx.ellipse(-10, -2 + walkBob, 4, 5, 0, 0, Math.PI * 2)
-  ctx.fill()
-  ctx.beginPath()
-  ctx.ellipse(10, -2 + walkBob, 4, 5, 0, 0, Math.PI * 2)
-  ctx.fill()
-
-  ctx.fillStyle = colors.armor
-  ctx.strokeStyle = colors.trim
-  ctx.beginPath()
-  ctx.arc(0, -10 + walkBob, 7, 0, Math.PI * 2)
-  ctx.fill()
-  ctx.stroke()
-
-  ctx.fillStyle = colors.visor
-  ctx.fillRect(2, -12 + walkBob, 6, 3)
-
-  ctx.fillStyle = colors.gun
-  ctx.fillRect(6 + shootRecoil, -2 + walkBob, 14, 4)
-
-  if (unit.state === 'shooting' && unit.stateTimer < 0.1) {
-    ctx.fillStyle = '#ffe566'
-    ctx.shadowColor = '#ff9f1c'
-    ctx.shadowBlur = 12
-    ctx.beginPath()
-    ctx.arc(22 + shootRecoil, 0 + walkBob, 5, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.shadowBlur = 0
-  }
-
-  ctx.restore()
-
-  // Status indicators
-  if (unit.coverLevel !== 'none' && unit.state !== 'dying') {
-    ctx.fillStyle = unit.coverLevel === 'full' ? '#4ecdc4' : '#74c0fc'
-    ctx.font = 'bold 8px sans-serif'
-    ctx.fillText('▣', unit.x - 14, unit.y - 20)
-  }
-  if (unit.holdPosition && unit.state !== 'dying') {
-    ctx.fillStyle = '#c9a227'
-    ctx.font = 'bold 9px sans-serif'
-    ctx.fillText('⏸', unit.x + 8, unit.y - 20)
-  }
-  if (unit.suppressedTimer > 0 && unit.state !== 'dying') {
-    ctx.fillStyle = '#ff6b6b'
-    ctx.font = 'bold 9px sans-serif'
-    ctx.fillText('!', unit.x - 4, unit.y - 22)
-  }
-
-  if (unit.health < unit.maxHealth && unit.state !== 'dying') {
-    const barW = 24
-    const pct = unit.health / unit.maxHealth
-    ctx.fillStyle = 'rgba(0,0,0,0.5)'
-    ctx.fillRect(unit.x - barW / 2, unit.y - 24, barW, 4)
-    ctx.fillStyle = unit.team === 'player' ? '#4ecdc4' : '#ff6b6b'
-    ctx.fillRect(unit.x - barW / 2, unit.y - 24, barW * pct, 4)
-  }
-}
-
 function drawTracer(ctx: CanvasRenderingContext2D, tracer: BattleState['tracers'][0]): void {
   const alpha = tracer.life / 0.12
   if (tracer.blocked) {
@@ -345,7 +237,7 @@ export function renderBattle(ctx: CanvasRenderingContext2D, state: BattleState):
 
   const sortedUnits = [...state.units].sort((a, b) => a.y - b.y)
   for (const unit of sortedUnits) {
-    drawTopDownSoldier(ctx, unit)
+    drawBattleUnit(ctx, unit, state.enemyColor)
   }
 
   for (const unitId of state.selectedUnitIds) {

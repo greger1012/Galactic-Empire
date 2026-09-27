@@ -201,6 +201,7 @@ export const useGameStore = create<GameStore>()(
           planetId,
           planetName: target.name,
           planetType: target.type,
+          enemyFactionId: target.enemyFaction,
           enemyColor: faction?.color ?? '#ff6b6b',
           fleetPower: getFleetPower(state.fleet, mods),
           defenseRating: target.defenseRating,
