@@ -50,6 +50,20 @@
   flex-wrap: wrap;
 }
 
+.faction-pulse-indicator {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  padding: 0.35rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: rgba(196, 75, 75, 0.04);
+}
+
+.faction-pulse-indicator strong {
+  color: #e8a0a0;
+}
+
 .empire-info {
   display: flex;
   flex-direction: column;
@@ -1020,6 +1034,13 @@
   max-width: 220px;
   text-align: right;
   line-height: 1.2;
+}
+
+.hud-apex {
+  color: var(--accent-bright);
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
 }
 
 .btn-retreat {

@@ -1,3 +1,4 @@
+import { DEFAULT_SQUAD_COOLDOWNS } from './abilities'
 import { getDeepVoidCombatMult } from '../game/deepVoid'
 import type { TechModifiers } from '../game/research'
 import type { PlanetType } from '../game/types'
@@ -60,6 +61,7 @@ function createUnit(
     grenadeCooldown: 0,
     coverLevel: 'none',
     pendingGrenade: null,
+    suppressiveFireTimer: 0,
   }
 }
 
@@ -222,6 +224,8 @@ export function createBattle(setup: BattleSetup): BattleState {
     hoveredUnitId: null,
     dragSelect: null,
     activeAbility: 'none',
+    squadCooldowns: { ...DEFAULT_SQUAD_COOLDOWNS },
+    isFrontierBoss,
     initialPlayerCount: playerCount,
     elapsed: 0,
     width: FIELD_WIDTH,

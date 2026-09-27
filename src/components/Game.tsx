@@ -3,8 +3,6 @@ import { TICK_INTERVAL_MS } from '../game/constants'
 import { LORE } from '../game/lore'
 import { useBattleStore } from '../store/battleStore'
 import { useGameStore } from '../store/gameStore'
-import { BattleOverlay } from './BattleOverlay'
-import { OrbitalOverlay } from './OrbitalOverlay'
 import { EventLog } from './EventLog'
 import { FleetPanel } from './FleetPanel'
 import { GalaxyMap } from './GalaxyMap'
@@ -12,7 +10,10 @@ import { PlanetPanel } from './PlanetPanel'
 import { ChroniclePanel } from './ChroniclePanel'
 import { MandateGuide } from './MandateGuide'
 import { ResearchPanel } from './ResearchPanel'
+import { FactionPulseIndicator } from './FactionPulseIndicator'
 import { ResourceBar } from './ResourceBar'
+import { BattleOverlay } from './BattleOverlay'
+import { OrbitalOverlay } from './OrbitalOverlay'
 
 export function Game() {
   const tickCount = useGameStore((s) => s.tickCount)
@@ -40,7 +41,7 @@ export function Game() {
       <div className="stars" />
       <div className="scanlines" />
       <ResourceBar />
-
+      <FactionPulseIndicator />
       {gameWon && !victoryBannerDismissed && (
         <div className="victory-banner">
           <h2>

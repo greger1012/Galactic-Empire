@@ -4,13 +4,29 @@ import {
   isFrontierChronicleUnlocked,
 } from '../game/frontierChronicles'
 import { LORE } from '../game/lore'
+import { useMemo } from 'react'
 import { useGameStore } from '../store/gameStore'
 
 export function ChroniclePanel() {
-  const views = useGameStore((s) => getChronicleMandateViews(s))
-  const frontierViews = useGameStore((s) => getFrontierChronicleViews(s))
-  const showFrontier = useGameStore((s) => isFrontierChronicleUnlocked(s))
-  const completed = useGameStore((s) => s.chronicle.completed.length)
+  const chronicle = useGameStore((s) => s.chronicle)
+  const frontierWave = useGameStore((s) => s.frontier.wave)
+  const planets = useGameStore((s) => s.planets)
+  const fleet = useGameStore((s) => s.fleet)
+  const research = useGameStore((s) => s.research)
+
+  const views = useMemo(
+    () => getChronicleMandateViews(useGameStore.getState()),
+    [chronicle, frontierWave, planets, fleet, research]
+  )
+  const frontierViews = useMemo(
+    () => getFrontierChronicleViews(useGameStore.getState()),
+    [chronicle, frontierWave, planets, fleet, research]
+  )
+  const showFrontier = useMemo(
+    () => isFrontierChronicleUnlocked(useGameStore.getState()),
+    [chronicle, frontierWave]
+  )
+  const completed = chronicle.completed.length
 
   return (
     <section className="panel chronicle-panel">

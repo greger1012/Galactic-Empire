@@ -19,6 +19,7 @@ A browser-based space empire strategy game set during humanity's **Golden Age of
 ```bash
 npm install
 npm run dev
+npm run test:e2e   # Playwright smoke test (builds + preview)
 ```
 
 Open the URL shown in the terminal (usually `http://localhost:5173`). Use **New Mandate** to reset progress. Saves use browser local storage (`galactic-empire-save-v2`).
@@ -38,7 +39,7 @@ Open the URL shown in the terminal (usually `http://localhost:5173`). Use **New 
 - **Noospheric Research** — 13 technologies; insight per cycle scales with **Throne Node tiers** empire-wide.
 - **Planet types** — 12 specializations (farming, mining, strategic chokepoints, etc.).
 - **Rival mandates** — Kryll Forge-Clans, Vexar Synod, Zynthian Concord, Void Reavers; periodic pulses every 15 cycles.
-- **Tactical combat** — Cover, suppression, grenades, procedural legion sprites, faction weapons.
+- **Tactical combat (Pass II)** — Cover, suppression, grenades, **squad abilities** (suppress / lance volley / vitae stim), **faction-specific hostile AI**, apex boss tactics, procedural legion sprites.
 
 ## Tech Stack
 

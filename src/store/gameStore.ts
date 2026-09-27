@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { BUILDING_INFO, ENEMY_FACTIONS, PLANET_TYPE_INFO, SHIP_INFO, getPlanetMaxPopulation } from '../game/constants'
@@ -598,15 +599,18 @@ export function useTechModifiers() {
 
 export function useProductionRates() {
   const planets = useGameStore((s) => s.planets)
-  const mods = useTechModifiers()
-  const production = calculateProduction(planets, mods)
-  const consumption = calculateConsumption(planets)
-  return {
-    minerals: production.minerals - consumption.minerals,
-    energy: production.energy - consumption.energy,
-    food: production.food - consumption.food,
-    credits: production.credits - consumption.credits,
-  }
+  const researched = useGameStore((s) => s.research.researched)
+  return useMemo(() => {
+    const mods = getTechModifiers(researched)
+    const production = calculateProduction(planets, mods)
+    const consumption = calculateConsumption(planets)
+    return {
+      minerals: production.minerals - consumption.minerals,
+      energy: production.energy - consumption.energy,
+      food: production.food - consumption.food,
+      credits: production.credits - consumption.credits,
+    }
+  }, [planets, researched])
 }
 
 export function useFleetPower() {

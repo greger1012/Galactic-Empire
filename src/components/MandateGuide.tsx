@@ -4,13 +4,28 @@ import {
   shouldShowMandateGuide,
 } from '../game/mandateGuide'
 import { LORE } from '../game/lore'
+import { useMemo } from 'react'
 import { useGameStore } from '../store/gameStore'
 
 export function MandateGuide() {
   const dismissed = useGameStore((s) => s.mandateGuide.dismissed)
-  const steps = useGameStore((s) => getMandateSteps(s))
-  const show = useGameStore((s) => shouldShowMandateGuide(s))
-  const complete = useGameStore((s) => isMandateComplete(s))
+  const invasionIssued = useGameStore((s) => s.mandateGuide.invasionIssued)
+  const planets = useGameStore((s) => s.planets)
+  const fleet = useGameStore((s) => s.fleet)
+  const research = useGameStore((s) => s.research)
+
+  const steps = useMemo(
+    () => getMandateSteps(useGameStore.getState()),
+    [dismissed, invasionIssued, planets, fleet, research]
+  )
+  const show = useMemo(
+    () => shouldShowMandateGuide(useGameStore.getState()),
+    [dismissed, invasionIssued, planets, fleet, research]
+  )
+  const complete = useMemo(
+    () => isMandateComplete(useGameStore.getState()),
+    [dismissed, invasionIssued, planets, fleet, research]
+  )
   const dismiss = useGameStore((s) => s.dismissMandateGuide)
 
   if (!show && !complete) return null

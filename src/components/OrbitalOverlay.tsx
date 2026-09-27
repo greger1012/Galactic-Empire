@@ -10,7 +10,13 @@ import { useBattleStore } from '../store/battleStore'
 import { useFleetPower, useGameStore, useTechModifiers } from '../store/gameStore'
 
 export function OrbitalOverlay() {
-  const orbital = useBattleStore((s) => s.orbital)
+  const orbitalActive = useBattleStore((s) => s.orbital?.active === true)
+  if (!orbitalActive) return null
+  return <OrbitalOverlayActive />
+}
+
+function OrbitalOverlayActive() {
+  const orbital = useBattleStore((s) => s.orbital)!
   const setDoctrine = useBattleStore((s) => s.setOrbitalDoctrine)
   const commit = useBattleStore((s) => s.commitOrbitalAssault)
   const deploy = useBattleStore((s) => s.proceedToGroundAssault)
@@ -19,8 +25,6 @@ export function OrbitalOverlay() {
   const fleet = useGameStore((s) => s.fleet)
   const mods = useTechModifiers()
   const fleetPower = useFleetPower()
-
-  if (!orbital?.active) return null
 
   const setup = orbital.pendingSetup
   const roles = getOrbitalShipRoles(fleet, mods)

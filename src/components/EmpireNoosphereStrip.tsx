@@ -1,10 +1,16 @@
 import { getEmpireNoosphereSummary } from '../game/mandateGuide'
 import { LORE } from '../game/lore'
+import { useMemo } from 'react'
 import { useGameStore } from '../store/gameStore'
 
 /** Empire-wide Noospheric stats for throne-world panels. */
 export function EmpireNoosphereStrip() {
-  const summary = useGameStore((s) => getEmpireNoosphereSummary(s))
+  const planets = useGameStore((s) => s.planets)
+  const researched = useGameStore((s) => s.research.researched)
+  const summary = useMemo(
+    () => getEmpireNoosphereSummary(useGameStore.getState()),
+    [planets, researched]
+  )
 
   return (
     <div className="noosphere-strip">

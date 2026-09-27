@@ -7,6 +7,7 @@ import {
   type TechId,
 } from '../game/research'
 import { getEmpireNoosphereSummary, getMandateFocus } from '../game/mandateGuide'
+import { useMemo } from 'react'
 import { useGameStore, useResearchRate } from '../store/gameStore'
 
 const BRANCHES: TechBranch[] = ['economy', 'military', 'science']
@@ -15,7 +16,12 @@ export function ResearchPanel() {
   const research = useGameStore((s) => s.research)
   const startResearch = useGameStore((s) => s.startResearch)
   const rate = useResearchRate()
-  const noosphere = useGameStore((s) => getEmpireNoosphereSummary(s))
+  const planets = useGameStore((s) => s.planets)
+  const researched = useGameStore((s) => s.research.researched)
+  const noosphere = useMemo(
+    () => getEmpireNoosphereSummary(useGameStore.getState()),
+    [planets, researched]
+  )
   const mandateFocus = useGameStore((s) => getMandateFocus(s))
 
   const current = research.current ? TECHS[research.current as TechId] : null

@@ -1,5 +1,6 @@
 import { distance } from './geometry'
 import { findCoverPosition, hasLineOfSight } from './cover'
+import type { FactionAITuning } from './factionAI'
 import type { BattleCover, BattleUnit } from './types'
 
 function findNearestEnemy(unit: BattleUnit, units: BattleUnit[]): BattleUnit | null {
@@ -74,7 +75,8 @@ export function updateEnemyAI(
   covers: BattleCover[],
   fieldWidth: number,
   fieldHeight: number,
-  elapsed: number
+  elapsed: number,
+  tuning: FactionAITuning
 ): void {
   if (unit.holdPosition) return
 
@@ -84,7 +86,7 @@ export function updateEnemyAI(
   const allies = units.filter((u) => u.team === 'enemy' && u.state !== 'dead' && u.state !== 'dying')
 
   const healthRatio = unit.health / unit.maxHealth
-  const underPressure = healthRatio < 0.45
+  const underPressure = healthRatio < (0.45 / tuning.coverSeekMult)
 
   let target = findWeakestEnemy(unit, units, unit.range * 1.2) ?? findNearestEnemy(unit, units)
   if (!target) return
@@ -103,12 +105,13 @@ export function updateEnemyAI(
   }
 
   // Occasional grenade
+  const grenadeRoll = 0.004 * tuning.grenadeChanceMult
   if (
     unit.grenadeCooldown <= 0 &&
     dist < 200 &&
     dist > 80 &&
     enemies.filter((e) => distance(e.x, e.y, target.x, target.y) < 60).length >= 2 &&
-    Math.random() < 0.004
+    Math.random() < grenadeRoll
   ) {
     unit.pendingGrenade = { x: target.x, y: target.y }
     unit.moveTargetX = null
@@ -116,12 +119,20 @@ export function updateEnemyAI(
     return
   }
 
-  if (!hasLOS || dist > unit.range * 0.9) {
-    // Flank instead of charging straight
-    const flank = findFlankPosition(unit, target, allies, fieldWidth, fieldHeight)
-    unit.moveTargetX = flank.x
-    unit.moveTargetY = flank.y
-  } else if (dist < unit.range * 0.4 && unit.coverLevel === 'none' && Math.random() < 0.3) {
+  const flankChance = Math.min(0.85, 0.3 * tuning.flankAggression)
+  const rangeThreshold = unit.range * (0.9 * tuning.rangeHoldMult)
+
+  if (!hasLOS || dist > rangeThreshold) {
+    if (tuning.advanceAggression > 1.1 && dist > unit.range && Math.random() < 0.35) {
+      unit.moveTargetX = target.x - 50
+      unit.moveTargetY = target.y
+    } else {
+      const flank = findFlankPosition(unit, target, allies, fieldWidth, fieldHeight)
+      const blend = tuning.flankAggression
+      unit.moveTargetX = unit.x + (flank.x - unit.x) * blend
+      unit.moveTargetY = unit.y + (flank.y - unit.y) * blend
+    }
+  } else if (dist < unit.range * 0.4 && unit.coverLevel === 'none' && Math.random() < flankChance) {
     // Back off slightly to maintain range
     const dx = unit.x - target.x
     const dy = unit.y - target.y
@@ -137,7 +148,8 @@ export function updateEnemyAI(
 
   // Suppress idle jitter early battle
   if (elapsed < 1 && dist > unit.range) {
-    unit.moveTargetX = target.x - 60
+    const advance = 60 * tuning.advanceAggression
+    unit.moveTargetX = target.x - advance
     unit.moveTargetY = target.y
   }
 }

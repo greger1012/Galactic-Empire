@@ -279,6 +279,10 @@ export function renderBattle(ctx: CanvasRenderingContext2D, state: BattleState):
     ctx.fillStyle = 'rgba(255, 100, 50, 0.08)'
     ctx.fillRect(0, 0, width, height)
   }
+  if (state.activeAbility === 'lanceVolley') {
+    ctx.fillStyle = 'rgba(110, 196, 216, 0.1)'
+    ctx.fillRect(0, 0, width, height)
+  }
 
   if (state.paused) {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.35)'

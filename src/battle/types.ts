@@ -44,6 +44,8 @@ export interface BattleUnit {
   grenadeCooldown: number
   coverLevel: CoverLevel
   pendingGrenade: { x: number; y: number } | null
+  /** Player squad ability: heightened suppressive fire. */
+  suppressiveFireTimer: number
 }
 
 export interface BattleTracer {
@@ -77,7 +79,13 @@ export interface BattleCover {
 
 export type BattleStatus = 'active' | 'victory' | 'defeat'
 
-export type ActiveAbility = 'none' | 'grenade'
+export type ActiveAbility = 'none' | 'grenade' | 'lanceVolley'
+
+export interface SquadAbilityCooldowns {
+  suppressiveFire: number
+  lanceVolley: number
+  vitaeStim: number
+}
 
 export interface DragSelect {
   startX: number
@@ -106,10 +114,12 @@ export interface BattleState {
   hoveredUnitId: string | null
   dragSelect: DragSelect | null
   activeAbility: ActiveAbility
+  squadCooldowns: SquadAbilityCooldowns
   initialPlayerCount: number
   elapsed: number
   width: number
   height: number
   /** Summary line from the preceding orbital phase. */
   orbitalChronicle?: string
+  isFrontierBoss?: boolean
 }

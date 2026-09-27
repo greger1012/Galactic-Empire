@@ -2,9 +2,12 @@ import {
   applySuppress,
   canShootAt,
   getFireInterval,
-  throwGrenade,
+  SUPPRESSIVE_FIRE_CHANCE,
   SUPPRESS_CHANCE,
+  tickSquadCooldowns,
+  throwGrenade,
 } from './abilities'
+import { resolveEnemyAITuning } from './factionAI'
 import {
   applyCoverToDamage,
   rollHit,
@@ -54,7 +57,9 @@ function applyDamage(
     const damage = applyCoverToDamage(attacker.damage, target)
     target.health -= damage
     if (attacker.team === 'player') {
-      if (Math.random() < SUPPRESS_CHANCE) applySuppress(target)
+      const suppressChance =
+        attacker.suppressiveFireTimer > 0 ? SUPPRESSIVE_FIRE_CHANCE : SUPPRESS_CHANCE
+      if (Math.random() < suppressChance) applySuppress(target)
     } else if (Math.random() < SUPPRESS_CHANCE * 0.6) {
       applySuppress(target, playerSuppressionMult)
     }
@@ -111,7 +116,14 @@ export function updateBattle(state: BattleState, dt: number): BattleState {
     .map((e) => ({ ...e, life: e.life - dt }))
     .filter((e) => e.life > 0)
   let tracerId = Date.now()
-  let nextState: BattleState = { ...state, units, tracers, explosions }
+  const aiTuning = resolveEnemyAITuning(state.enemyFactionId, state.isFrontierBoss)
+  let nextState: BattleState = {
+    ...state,
+    units,
+    tracers,
+    explosions,
+    squadCooldowns: tickSquadCooldowns(state.squadCooldowns, dt),
+  }
 
   updateUnitCoverLevels(units, state.covers)
 
@@ -141,6 +153,7 @@ export function updateBattle(state: BattleState, dt: number): BattleState {
     unit.animFrame += dt * 10
     unit.stateTimer += dt
     if (unit.suppressedTimer > 0) unit.suppressedTimer -= dt
+    if (unit.suppressiveFireTimer > 0) unit.suppressiveFireTimer -= dt
     if (unit.grenadeCooldown > 0.1) unit.grenadeCooldown -= dt
 
     if (unit.state === 'dying') {
@@ -151,7 +164,15 @@ export function updateBattle(state: BattleState, dt: number): BattleState {
     if (unit.state === 'dead') continue
 
     if (unit.team === 'enemy') {
-      updateEnemyAI(unit, nextState.units, state.covers, state.width, state.height, state.elapsed)
+      updateEnemyAI(
+        unit,
+        nextState.units,
+        state.covers,
+        state.width,
+        state.height,
+        state.elapsed,
+        aiTuning
+      )
     }
 
     moveUnit(unit, dt, state.covers)

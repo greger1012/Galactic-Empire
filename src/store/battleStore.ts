@@ -1,5 +1,10 @@
 import { create } from 'zustand'
 import {
+  activateSuppressiveFire,
+  applyVitaeStim,
+  throwLanceVolley,
+} from '../battle/abilities'
+import {
   addToSelection,
   boxSelectUnits,
   getUnitAtPosition,
@@ -50,6 +55,9 @@ interface BattleStore {
   togglePause: () => void
   toggleHold: () => void
   activateGrenade: () => void
+  activateSuppressiveFire: () => void
+  activateLanceVolley: () => void
+  activateVitaeStim: () => void
   endBattle: () => void
 }
 
@@ -248,6 +256,11 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
       return
     }
 
+    if (battle.activeAbility === 'lanceVolley') {
+      set({ battle: throwLanceVolley(battle, x, y) })
+      return
+    }
+
     if (battle.selectedUnitIds.length > 0) {
       set({ battle: issueMoveOrder(battle, x, y) })
     }
@@ -270,6 +283,25 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
     if (!battle || battle.selectedUnitIds.length === 0) return
     const ability = battle.activeAbility === 'grenade' ? 'none' : 'grenade'
     set({ battle: setActiveAbility(battle, ability) })
+  },
+
+  activateSuppressiveFire: () => {
+    const { battle } = get()
+    if (!battle || battle.selectedUnitIds.length === 0) return
+    set({ battle: activateSuppressiveFire(battle) })
+  },
+
+  activateLanceVolley: () => {
+    const { battle } = get()
+    if (!battle || battle.squadCooldowns.lanceVolley > 0) return
+    const ability = battle.activeAbility === 'lanceVolley' ? 'none' : 'lanceVolley'
+    set({ battle: setActiveAbility(battle, ability) })
+  },
+
+  activateVitaeStim: () => {
+    const { battle } = get()
+    if (!battle || battle.selectedUnitIds.length === 0) return
+    set({ battle: applyVitaeStim(battle) })
   },
 
   endBattle: () => set({ battle: null, isDragging: false }),

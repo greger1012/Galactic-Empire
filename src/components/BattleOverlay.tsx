@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import type { BattleState } from '../battle/types'
 import { BattleUnitTooltip } from './BattleUnitTooltip'
 import { LORE } from '../game/lore'
 import { getSurvivalRatio } from '../battle/battleLogic'
@@ -8,7 +9,13 @@ import { useBattleStore } from '../store/battleStore'
 import { useGameStore } from '../store/gameStore'
 
 export function BattleOverlay() {
-  const battle = useBattleStore((s) => s.battle)
+  const battleActive = useBattleStore((s) => s.battle?.active === true)
+  if (!battleActive) return null
+  return <BattleOverlayActive />
+}
+
+function BattleOverlayActive() {
+  const battle = useBattleStore((s) => s.battle) as BattleState
   const update = useBattleStore((s) => s.update)
   const handleMouseDown = useBattleStore((s) => s.handleMouseDown)
   const handlePointerMove = useBattleStore((s) => s.handlePointerMove)
@@ -17,9 +24,9 @@ export function BattleOverlay() {
   const togglePause = useBattleStore((s) => s.togglePause)
   const toggleHold = useBattleStore((s) => s.toggleHold)
   const activateGrenade = useBattleStore((s) => s.activateGrenade)
-  const endBattle = useBattleStore((s) => s.endBattle)
-  const completeBattle = useGameStore((s) => s.completeBattle)
-  const failBattle = useGameStore((s) => s.failBattle)
+  const activateSuppressiveFire = useBattleStore((s) => s.activateSuppressiveFire)
+  const activateLanceVolley = useBattleStore((s) => s.activateLanceVolley)
+  const activateVitaeStim = useBattleStore((s) => s.activateVitaeStim)
   const retreatBattle = useGameStore((s) => s.retreatBattle)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -29,8 +36,6 @@ export function BattleOverlay() {
   const [pointer, setPointer] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
-    if (!battle?.active) return
-
     let frameId: number
     const loop = (time: number) => {
       const dt = Math.min(0.05, (time - lastTimeRef.current) / 1000)
@@ -42,31 +47,32 @@ export function BattleOverlay() {
     lastTimeRef.current = performance.now()
     frameId = requestAnimationFrame(loop)
     return () => cancelAnimationFrame(frameId)
-  }, [battle?.active, update])
+  }, [update])
 
   useEffect(() => {
-    if (!battle || battle.status === 'active' || completedRef.current) return
+    if (battle.status === 'active' || completedRef.current) return
 
     completedRef.current = true
     const survivalRatio = getSurvivalRatio(battle)
+    const game = useGameStore.getState()
 
     if (battle.status === 'victory') {
-      completeBattle(battle.planetId, survivalRatio)
+      game.completeBattle(battle.planetId, survivalRatio)
     } else {
-      failBattle(battle.planetId)
+      game.failBattle(battle.planetId)
     }
 
     const timer = setTimeout(() => {
-      endBattle()
+      useBattleStore.getState().endBattle()
       completedRef.current = false
     }, 2200)
 
     return () => clearTimeout(timer)
-  }, [battle, completeBattle, failBattle, endBattle])
+  }, [battle.status, battle.planetId])
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas || !battle?.active) return
+    if (!canvas) return
 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
@@ -74,18 +80,16 @@ export function BattleOverlay() {
     let frameId: number
     const draw = () => {
       const current = useBattleStore.getState().battle
-      if (!current) return
+      if (!current?.active) return
       renderBattle(ctx, current)
       frameId = requestAnimationFrame(draw)
     }
 
     frameId = requestAnimationFrame(draw)
     return () => cancelAnimationFrame(frameId)
-  }, [battle?.active])
+  }, [])
 
   useEffect(() => {
-    if (!battle?.active) return
-
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
         e.preventDefault()
@@ -93,9 +97,12 @@ export function BattleOverlay() {
       }
       if (e.key === 'h' || e.key === 'H') toggleHold()
       if (e.key === 'g' || e.key === 'G') activateGrenade()
+      if (e.key === 'f' || e.key === 'F') activateSuppressiveFire()
+      if (e.key === 'l' || e.key === 'L') activateLanceVolley()
+      if (e.key === 'v' || e.key === 'V') activateVitaeStim()
       if (e.key === 'Escape') {
         const b = useBattleStore.getState().battle
-        if (b?.activeAbility === 'grenade') {
+        if (b?.activeAbility === 'grenade' || b?.activeAbility === 'lanceVolley') {
           useBattleStore.setState({
             battle: b ? { ...b, activeAbility: 'none' } : null,
           })
@@ -105,9 +112,14 @@ export function BattleOverlay() {
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [battle?.active, togglePause, toggleHold, activateGrenade])
-
-  if (!battle?.active) return null
+  }, [
+    togglePause,
+    toggleHold,
+    activateGrenade,
+    activateSuppressiveFire,
+    activateLanceVolley,
+    activateVitaeStim,
+  ])
 
   const playerAlive = battle.units.filter(
     (u) => u.team === 'player' && u.state !== 'dead' && u.state !== 'dying'
@@ -126,6 +138,11 @@ export function BattleOverlay() {
   const hoveredUnit = battle.hoveredUnitId
     ? battle.units.find((u) => u.id === battle.hoveredUnitId)
     : undefined
+
+  const cd = battle.squadCooldowns
+  const suppressReady = selectedCount > 0 && cd.suppressiveFire <= 0
+  const lanceReady = cd.lanceVolley <= 0
+  const vitaeReady = selectedCount > 0 && cd.vitaeStim <= 0
 
   const grenadeReady = battle.units.some(
     (u) =>
@@ -161,6 +178,7 @@ export function BattleOverlay() {
             <span className="hud-roster" style={{ color: battle.enemyColor }}>
               {battle.hostileRosterName}
             </span>
+            {battle.isFrontierBoss && <span className="hud-apex">👑 Apex Bastion</span>}
             {selectedCount > 0 && (
               <span className="hud-selected">Selected: {selectedCount}</span>
             )}
@@ -188,6 +206,30 @@ export function BattleOverlay() {
                   title="Frag Grenade (G)"
                 >
                   💣 Grenade
+                </button>
+                <button
+                  className="btn btn-ability"
+                  onClick={activateSuppressiveFire}
+                  disabled={!suppressReady}
+                  title="Suppressive Fire (F) — faster fire, pins hostiles"
+                >
+                  🎯 Suppress{cd.suppressiveFire > 0 ? ` ${Math.ceil(cd.suppressiveFire)}s` : ''}
+                </button>
+                <button
+                  className={`btn btn-ability ${battle.activeAbility === 'lanceVolley' ? 'active' : ''}`}
+                  onClick={activateLanceVolley}
+                  disabled={!lanceReady}
+                  title="Lance Volley (L) — click to strike an area"
+                >
+                  ⚡ Lance{cd.lanceVolley > 0 ? ` ${Math.ceil(cd.lanceVolley)}s` : ''}
+                </button>
+                <button
+                  className="btn btn-ability"
+                  onClick={activateVitaeStim}
+                  disabled={!vitaeReady}
+                  title="Vitae Stim (V) — heal selected legionnaires"
+                >
+                  💉 Stim{cd.vitaeStim > 0 ? ` ${Math.ceil(cd.vitaeStim)}s` : ''}
                 </button>
                 <button
                   className="btn btn-retreat"
@@ -240,6 +282,9 @@ export function BattleOverlay() {
           {battle.activeAbility === 'grenade' && (
             <div className="ability-hint">Click to throw grenade · Esc to cancel</div>
           )}
+          {battle.activeAbility === 'lanceVolley' && (
+            <div className="ability-hint">Click to call lance volley · Esc to cancel</div>
+          )}
 
           {battle.status === 'victory' && (
             <div className="battle-result victory">
@@ -261,7 +306,7 @@ export function BattleOverlay() {
             Full cover blocks shots · Half/Full cover reduces damage
           </p>
           <p className="battle-hotkeys">
-            Space: Pause · H: Hold position · G: Grenade
+            Space: Pause · H: Hold · G: Grenade · F: Suppress · L: Lance volley · V: Vitae stim
           </p>
         </footer>
       </div>
