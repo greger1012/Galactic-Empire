@@ -191,6 +191,7 @@ export function createBattle(setup: BattleSetup): BattleState {
     explosions: [],
     covers: generateBiomeCovers(biome, planetId, FIELD_WIDTH, FIELD_HEIGHT),
     selectedUnitIds: [],
+    hoveredUnitId: null,
     dragSelect: null,
     activeAbility: 'none',
     initialPlayerCount: playerCount,

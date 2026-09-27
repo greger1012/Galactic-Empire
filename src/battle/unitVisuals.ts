@@ -1,4 +1,5 @@
 import { getFactionLore } from '../game/lore'
+import { getWeaponMuzzleX, getWeaponStyle, type WeaponStyle } from './unitMeta'
 import type { BattleUnit, UnitArchetype } from './types'
 
 export interface UnitPalette {
@@ -126,8 +127,6 @@ function drawHostileSilhouette(
     ctx.beginPath()
     ctx.roundRect(-11, -7 + walkBob, 22, 16, 2)
     ctx.fill()
-    ctx.fillStyle = colors.gun
-    ctx.fillRect(4, -1 + walkBob, 18, 6)
     ctx.fillStyle = colors.trim
     ctx.fillRect(-3, -11 + walkBob, 6, 8)
     return
@@ -150,22 +149,140 @@ function drawHostileSilhouette(
   ctx.fill()
 }
 
-function drawWeapon(
+function drawFactionWeapon(
   ctx: CanvasRenderingContext2D,
-  archetype: UnitArchetype,
+  style: WeaponStyle,
   walkBob: number,
   shootRecoil: number,
   colors: UnitPalette
 ): void {
+  const x = shootRecoil
+  const y = walkBob
   ctx.fillStyle = colors.gun
-  if (archetype === 'hostileHeavy' || archetype === 'hostileBulwark') {
-    ctx.fillRect(5 + shootRecoil, -3 + walkBob, 20, 6)
-    ctx.fillStyle = colors.trim
-    ctx.fillRect(12 + shootRecoil, -5 + walkBob, 8, 3)
-  } else if (archetype === 'hostileSkirmisher') {
-    ctx.fillRect(4 + shootRecoil, -1 + walkBob, 12, 3)
-  } else {
-    ctx.fillRect(6 + shootRecoil, -2 + walkBob, 14, 4)
+  ctx.strokeStyle = colors.trim
+  ctx.lineWidth = 1
+
+  switch (style) {
+    case 'pulseRifle':
+      ctx.fillRect(6 + x, -2 + y, 14, 4)
+      ctx.fillStyle = colors.trim
+      ctx.fillRect(10 + x, -4 + y, 5, 2)
+      break
+    case 'luminCarbine':
+      ctx.fillRect(5 + x, -2 + y, 18, 5)
+      ctx.fillStyle = colors.accent
+      ctx.fillRect(14 + x, -3 + y, 6, 3)
+      ctx.fillStyle = colors.visor
+      ctx.fillRect(20 + x, -1 + y, 3, 2)
+      break
+    case 'kryllRivetGun':
+      ctx.fillRect(5 + x, -3 + y, 16, 7)
+      ctx.fillStyle = colors.trim
+      for (let i = 0; i < 3; i++) ctx.fillRect(8 + x + i * 4, -5 + y, 2, 2)
+      ctx.fillStyle = '#ff6a40'
+      ctx.fillRect(18 + x, -1 + y, 4, 3)
+      break
+    case 'kryllForgeCannon':
+      ctx.fillRect(4 + x, -4 + y, 22, 9)
+      ctx.fillStyle = colors.accent
+      ctx.fillRect(10 + x, -6 + y, 10, 3)
+      ctx.fillStyle = '#ff4500'
+      ctx.beginPath()
+      ctx.arc(24 + x, 0 + y, 3, 0, Math.PI * 2)
+      ctx.fill()
+      break
+    case 'kryllRivetPistol':
+      ctx.fillRect(4 + x, -2 + y, 10, 5)
+      ctx.fillStyle = colors.trim
+      ctx.fillRect(6 + x, -4 + y, 3, 2)
+      break
+    case 'vexarNullRod':
+      ctx.strokeStyle = colors.visor
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(4 + x, 2 + y)
+      ctx.lineTo(20 + x, -2 + y)
+      ctx.stroke()
+      ctx.fillStyle = 'rgba(180, 140, 255, 0.9)'
+      ctx.beginPath()
+      ctx.arc(20 + x, -2 + y, 3.5, 0, Math.PI * 2)
+      ctx.fill()
+      break
+    case 'vexarPenitentLance':
+      ctx.strokeStyle = colors.trim
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(6 + x, 0 + y)
+      ctx.lineTo(24 + x, -4 + y)
+      ctx.moveTo(6 + x, 0 + y)
+      ctx.lineTo(24 + x, 4 + y)
+      ctx.stroke()
+      ctx.fillStyle = colors.visor
+      ctx.beginPath()
+      ctx.arc(24 + x, 0 + y, 4, 0, Math.PI * 2)
+      ctx.fill()
+      break
+    case 'vexarSkiffNeedler':
+      ctx.fillRect(5 + x, -1 + y, 11, 3)
+      ctx.fillStyle = colors.visor
+      ctx.fillRect(14 + x, -2 + y, 2, 5)
+      break
+    case 'zynthianSpineRifle':
+      ctx.strokeStyle = colors.trim
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(5 + x, 2 + y)
+      ctx.quadraticCurveTo(14 + x, -6 + y, 20 + x, 0 + y)
+      ctx.stroke()
+      ctx.fillStyle = '#7cff9a'
+      ctx.beginPath()
+      ctx.arc(20 + x, 0 + y, 2.5, 0, Math.PI * 2)
+      ctx.fill()
+      break
+    case 'zynthianVitaeCannon':
+      ctx.fillStyle = colors.armorDark
+      ctx.beginPath()
+      ctx.ellipse(14 + x, 0 + y, 10, 6, 0, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.strokeStyle = colors.trim
+      ctx.stroke()
+      ctx.fillStyle = '#9affc0'
+      ctx.beginPath()
+      ctx.arc(22 + x, 0 + y, 3, 0, Math.PI * 2)
+      ctx.fill()
+      break
+    case 'zynthianStalkerBlade':
+      ctx.strokeStyle = colors.trim
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(8 + x, 4 + y)
+      ctx.lineTo(16 + x, -8 + y)
+      ctx.stroke()
+      ctx.fillStyle = colors.gun
+      ctx.fillRect(4 + x, -1 + y, 8, 3)
+      break
+    case 'reaverSawedOff':
+      ctx.fillRect(5 + x, -3 + y, 12, 6)
+      ctx.fillStyle = '#5a4030'
+      ctx.fillRect(5 + x, 1 + y, 5, 4)
+      break
+    case 'reaverBoardingGun':
+      ctx.fillRect(3 + x, -5 + y, 24, 10)
+      ctx.strokeStyle = '#c47f1a'
+      ctx.strokeRect(8 + x, -7 + y, 8, 3)
+      break
+    case 'reaverCutlass':
+      ctx.strokeStyle = '#c0a070'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(6 + x, 3 + y)
+      ctx.lineTo(14 + x, -6 + y)
+      ctx.stroke()
+      ctx.fillStyle = colors.gun
+      ctx.fillRect(4 + x, 0 + y, 7, 3)
+      break
+    default:
+      ctx.fillRect(6 + x, -2 + y, 14, 4)
   }
 }
 
@@ -182,7 +299,7 @@ function drawMuzzleFlash(
   ctx.fillStyle = flashColor
   ctx.shadowColor = flashColor
   ctx.shadowBlur = 14
-  const tipX = unit.archetype === 'hostileHeavy' ? 26 : 22
+  const tipX = getWeaponMuzzleX(unit)
   ctx.beginPath()
   ctx.arc(tipX + shootRecoil, 0 + walkBob, 5, 0, Math.PI * 2)
   ctx.fill()
@@ -322,9 +439,7 @@ export function drawBattleUnit(
     }
   }
 
-  if (unit.archetype !== 'hostileHeavy') {
-    drawWeapon(ctx, unit.archetype, walkBob, shootRecoil, colors)
-  }
+  drawFactionWeapon(ctx, getWeaponStyle(unit), walkBob, shootRecoil, colors)
   drawMuzzleFlash(ctx, unit, walkBob, shootRecoil, colors)
 
   ctx.restore()

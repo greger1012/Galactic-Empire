@@ -240,6 +240,20 @@ export function renderBattle(ctx: CanvasRenderingContext2D, state: BattleState):
     drawBattleUnit(ctx, unit, state.enemyColor)
   }
 
+  if (state.hoveredUnitId) {
+    const hovered = state.units.find((u) => u.id === state.hoveredUnitId)
+    if (hovered && hovered.state !== 'dead' && hovered.state !== 'dying') {
+      ctx.strokeStyle =
+        hovered.team === 'player' ? 'rgba(126, 232, 250, 0.85)' : 'rgba(255, 180, 120, 0.9)'
+      ctx.lineWidth = 1.5
+      ctx.setLineDash([2, 3])
+      ctx.beginPath()
+      ctx.arc(hovered.x, hovered.y, 24, 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.setLineDash([])
+    }
+  }
+
   for (const unitId of state.selectedUnitIds) {
     const unit = state.units.find((u) => u.id === unitId)
     if (unit && unit.state !== 'dead') {

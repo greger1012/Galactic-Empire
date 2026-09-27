@@ -103,6 +103,7 @@ export interface BattleState {
   explosions: BattleExplosion[]
   covers: BattleCover[]
   selectedUnitIds: string[]
+  hoveredUnitId: string | null
   dragSelect: DragSelect | null
   activeAbility: ActiveAbility
   initialPlayerCount: number

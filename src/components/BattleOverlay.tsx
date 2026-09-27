@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { BattleUnitTooltip } from './BattleUnitTooltip'
 import { LORE } from '../game/lore'
 import { getSurvivalRatio } from '../battle/battleLogic'
 import { BIOMES } from '../battle/biomes'
@@ -10,7 +11,8 @@ export function BattleOverlay() {
   const battle = useBattleStore((s) => s.battle)
   const update = useBattleStore((s) => s.update)
   const handleMouseDown = useBattleStore((s) => s.handleMouseDown)
-  const handleMouseMove = useBattleStore((s) => s.handleMouseMove)
+  const handlePointerMove = useBattleStore((s) => s.handlePointerMove)
+  const clearHover = useBattleStore((s) => s.clearHover)
   const handleMouseUp = useBattleStore((s) => s.handleMouseUp)
   const togglePause = useBattleStore((s) => s.togglePause)
   const toggleHold = useBattleStore((s) => s.toggleHold)
@@ -21,8 +23,10 @@ export function BattleOverlay() {
   const retreatBattle = useGameStore((s) => s.retreatBattle)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const wrapRef = useRef<HTMLDivElement>(null)
   const lastTimeRef = useRef(0)
   const completedRef = useRef(false)
+  const [pointer, setPointer] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
     if (!battle?.active) return
@@ -119,6 +123,10 @@ export function BattleOverlay() {
 
   const biome = BIOMES[battle.planetType]
   const selectedCount = battle.selectedUnitIds.length
+  const hoveredUnit = battle.hoveredUnitId
+    ? battle.units.find((u) => u.id === battle.hoveredUnitId)
+    : undefined
+
   const grenadeReady = battle.units.some(
     (u) =>
       battle.selectedUnitIds.includes(u.id) &&
@@ -189,7 +197,7 @@ export function BattleOverlay() {
           </div>
         </header>
 
-        <div className="battle-canvas-wrap">
+        <div className="battle-canvas-wrap" ref={wrapRef}>
           <canvas
             ref={canvasRef}
             width={battle.width}
@@ -200,15 +208,31 @@ export function BattleOverlay() {
               handleMouseDown(c.x, c.y, e.shiftKey)
             }}
             onMouseMove={(e) => {
+              const wrap = wrapRef.current
+              if (wrap) {
+                const rect = wrap.getBoundingClientRect()
+                setPointer({ x: e.clientX - rect.left, y: e.clientY - rect.top })
+              }
               const c = getCoords(e.clientX, e.clientY)
-              handleMouseMove(c.x, c.y)
+              handlePointerMove(c.x, c.y)
             }}
             onMouseUp={(e) => {
               const c = getCoords(e.clientX, e.clientY)
               handleMouseUp(c.x, c.y, e.shiftKey)
             }}
+            onMouseLeave={() => clearHover()}
             onContextMenu={(e) => e.preventDefault()}
           />
+
+          {hoveredUnit && hoveredUnit.state !== 'dead' && hoveredUnit.state !== 'dying' && (
+            <BattleUnitTooltip
+              unit={hoveredUnit}
+              x={pointer.x}
+              y={pointer.y}
+              wrapWidth={wrapRef.current?.clientWidth ?? battle.width}
+              wrapHeight={wrapRef.current?.clientHeight ?? battle.height}
+            />
+          )}
 
           {battle.activeAbility === 'grenade' && (
             <div className="ability-hint">Click to throw grenade · Esc to cancel</div>
@@ -230,7 +254,7 @@ export function BattleOverlay() {
 
         <footer className="battle-footer">
           <p>
-            Drag to select squad · Shift+click to add · Click field to advance ·
+            Drag to select squad · Shift+click to add · Hover units for intel ·
             Full cover blocks shots · Half/Full cover reduces damage
           </p>
           <p className="battle-hotkeys">

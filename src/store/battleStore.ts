@@ -20,7 +20,8 @@ interface BattleStore {
   startBattle: (setup: BattleSetup) => void
   update: (dt: number) => void
   handleMouseDown: (x: number, y: number, shiftKey: boolean) => void
-  handleMouseMove: (x: number, y: number) => void
+  handlePointerMove: (x: number, y: number) => void
+  clearHover: () => void
   handleMouseUp: (x: number, y: number, shiftKey: boolean) => void
   handleCanvasClick: (x: number, y: number) => void
   togglePause: () => void
@@ -70,16 +71,32 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
     })
   },
 
-  handleMouseMove: (x, y) => {
+  handlePointerMove: (x, y) => {
     const { battle, isDragging } = get()
-    if (!battle?.dragSelect || !isDragging) return
+    if (!battle) return
 
-    set({
-      battle: {
-        ...battle,
-        dragSelect: { ...battle.dragSelect, endX: x, endY: y },
-      },
-    })
+    if (isDragging && battle.dragSelect) {
+      set({
+        battle: {
+          ...battle,
+          dragSelect: { ...battle.dragSelect, endX: x, endY: y },
+        },
+      })
+      return
+    }
+
+    const hit = getUnitAtPosition(battle, x, y)
+    const hoveredId =
+      hit && hit.state !== 'dead' && hit.state !== 'dying' ? hit.id : null
+    if (hoveredId !== battle.hoveredUnitId) {
+      set({ battle: { ...battle, hoveredUnitId: hoveredId } })
+    }
+  },
+
+  clearHover: () => {
+    const { battle } = get()
+    if (!battle?.hoveredUnitId) return
+    set({ battle: { ...battle, hoveredUnitId: null } })
   },
 
   handleMouseUp: (x, y, shiftKey) => {
