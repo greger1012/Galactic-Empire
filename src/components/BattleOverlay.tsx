@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { LORE } from '../game/lore'
 import { getSurvivalRatio } from '../battle/battleLogic'
+import { BIOMES } from '../battle/biomes'
 import { canvasToBattleCoords, renderBattle } from '../battle/battleRenderer'
 import { useBattleStore } from '../store/battleStore'
 import { useGameStore } from '../store/gameStore'
@@ -116,6 +117,7 @@ export function BattleOverlay() {
     return canvasToBattleCoords(canvas, clientX, clientY, battle.width, battle.height)
   }
 
+  const biome = BIOMES[battle.planetType]
   const selectedCount = battle.selectedUnitIds.length
   const grenadeReady = battle.units.some(
     (u) =>
@@ -132,6 +134,13 @@ export function BattleOverlay() {
           <div>
             <h2>{LORE.battle.assaultTitle} — {battle.planetName}</h2>
             <p className="battle-subtitle">{LORE.battle.assaultSubtitle}</p>
+            <p className="battle-biome">
+              <span className="battle-biome-name">{biome.name}</span>
+              <span className="battle-biome-tagline"> · {biome.tagline}</span>
+              {biome.hazardLabel && (
+                <span className="battle-biome-hazard"> · {biome.hazardLabel}</span>
+              )}
+            </p>
           </div>
           <div className="battle-hud">
             <span className="hud-player">{LORE.battle.legionLabel}: {playerAlive}</span>

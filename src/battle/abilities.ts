@@ -44,7 +44,7 @@ export function throwGrenade(
       unit.moveTargetX = null
       unit.moveTargetY = null
     } else if (unit.team !== team) {
-      unit.suppressedTimer = Math.max(unit.suppressedTimer, SUPPRESS_DURATION)
+      applySuppress(unit, unit.team === 'player' ? state.playerSuppressionMult : 1)
     }
   }
 
@@ -66,8 +66,8 @@ export function throwGrenade(
   }
 }
 
-export function applySuppress(target: BattleUnit): void {
-  target.suppressedTimer = Math.max(target.suppressedTimer, SUPPRESS_DURATION)
+export function applySuppress(target: BattleUnit, durationMult = 1): void {
+  target.suppressedTimer = Math.max(target.suppressedTimer, SUPPRESS_DURATION * durationMult)
 }
 
 export function toggleHoldPosition(state: BattleState): BattleState {

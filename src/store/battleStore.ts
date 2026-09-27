@@ -11,19 +11,13 @@ import {
   togglePause,
   updateBattle,
 } from '../battle/battleLogic'
-import { createBattle } from '../battle/spawnBattle'
+import { createBattle, type BattleSetup } from '../battle/spawnBattle'
 import type { BattleState } from '../battle/types'
 
 interface BattleStore {
   battle: BattleState | null
   isDragging: boolean
-  startBattle: (
-    planetId: string,
-    planetName: string,
-    enemyColor: string,
-    fleetPower: number,
-    defenseRating: number
-  ) => void
+  startBattle: (setup: BattleSetup) => void
   update: (dt: number) => void
   handleMouseDown: (x: number, y: number, shiftKey: boolean) => void
   handleMouseMove: (x: number, y: number) => void
@@ -41,11 +35,8 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
   battle: null,
   isDragging: false,
 
-  startBattle: (planetId, planetName, enemyColor, fleetPower, defenseRating) => {
-    set({
-      battle: createBattle(planetId, planetName, enemyColor, fleetPower, defenseRating),
-      isDragging: false,
-    })
+  startBattle: (setup) => {
+    set({ battle: createBattle(setup), isDragging: false })
   },
 
   update: (dt) => {

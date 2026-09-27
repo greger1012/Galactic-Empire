@@ -1,4 +1,5 @@
-import type { BattleState, BattleUnit } from './types'
+import { BIOMES, type Biome } from './biomes'
+import type { BattleCover, BattleState, BattleUnit } from './types'
 
 const TEAM_COLORS = {
   player: {
@@ -15,23 +16,133 @@ const TEAM_COLORS = {
   },
 }
 
-function drawCover(ctx: CanvasRenderingContext2D, cover: BattleState['covers'][0]): void {
-  const isFull = cover.level === 'full'
-  ctx.fillStyle = isFull ? '#1a2230' : '#1e2836'
-  ctx.strokeStyle = isFull ? '#4a6078' : '#3d4f63'
-  ctx.lineWidth = 2
-  ctx.fillRect(cover.x, cover.y, cover.width, cover.height)
-  ctx.strokeRect(cover.x, cover.y, cover.width, cover.height)
+/** Stable per-cover jitter so organic shapes don't flicker between frames. */
+function coverHash(cover: BattleCover): number {
+  const n = Math.sin(cover.x * 12.9898 + cover.y * 78.233) * 43758.5453
+  return n - Math.floor(n)
+}
 
-  ctx.strokeStyle = isFull ? 'rgba(201, 162, 39, 0.5)' : 'rgba(201, 162, 39, 0.25)'
+function traceCoverShape(ctx: CanvasRenderingContext2D, cover: BattleCover, biome: Biome): void {
+  const { x, y, width: w, height: h } = cover
+  const cx = x + w / 2
+  const cy = y + h / 2
+  const jitter = coverHash(cover)
+
   ctx.beginPath()
-  ctx.moveTo(cover.x + 6, cover.y + 6)
-  ctx.lineTo(cover.x + cover.width - 6, cover.y + cover.height - 6)
-  ctx.stroke()
+  switch (biome.coverStyle) {
+    case 'boulders': {
+      const points = 8
+      for (let i = 0; i < points; i++) {
+        const angle = (i / points) * Math.PI * 2
+        const wobble = 0.78 + ((Math.sin(angle * 3 + jitter * 10) + 1) / 2) * 0.22
+        const px = cx + Math.cos(angle) * (w / 2) * wobble
+        const py = cy + Math.sin(angle) * (h / 2) * wobble
+        if (i === 0) ctx.moveTo(px, py)
+        else ctx.lineTo(px, py)
+      }
+      ctx.closePath()
+      break
+    }
+    case 'domes':
+      ctx.ellipse(cx, cy, w / 2, h / 2, 0, 0, Math.PI * 2)
+      break
+    case 'crystals': {
+      const tipLean = (jitter - 0.5) * w * 0.6
+      ctx.moveTo(x + w * 0.2, y + h)
+      ctx.lineTo(x, y + h * 0.55)
+      ctx.lineTo(cx + tipLean, y)
+      ctx.lineTo(x + w, y + h * 0.45)
+      ctx.lineTo(x + w * 0.8, y + h)
+      ctx.closePath()
+      break
+    }
+    case 'ruins': {
+      const notch = 6 + jitter * 10
+      ctx.moveTo(x, y + notch)
+      ctx.lineTo(x + w * 0.3, y + notch)
+      ctx.lineTo(x + w * 0.3, y)
+      ctx.lineTo(x + w * 0.65, y)
+      ctx.lineTo(x + w * 0.65, y + notch * 0.6)
+      ctx.lineTo(x + w, y + notch * 0.6)
+      ctx.lineTo(x + w, y + h)
+      ctx.lineTo(x, y + h)
+      ctx.closePath()
+      break
+    }
+    case 'wrecks': {
+      const skew = (jitter - 0.5) * 12
+      ctx.moveTo(x + skew, y)
+      ctx.lineTo(x + w, y + 4)
+      ctx.lineTo(x + w - skew, y + h)
+      ctx.lineTo(x + 4, y + h - 3)
+      ctx.closePath()
+      break
+    }
+    default:
+      ctx.roundRect(x, y, w, h, 3)
+  }
+}
 
-  ctx.fillStyle = isFull ? 'rgba(78, 205, 196, 0.15)' : 'rgba(78, 205, 196, 0.08)'
-  ctx.font = '9px sans-serif'
+function drawCover(ctx: CanvasRenderingContext2D, cover: BattleCover, biome: Biome): void {
+  const isFull = cover.level === 'full'
+
+  ctx.save()
+  traceCoverShape(ctx, cover, biome)
+  ctx.fillStyle = biome.coverFill
+  ctx.strokeStyle = biome.coverStroke
+  ctx.lineWidth = isFull ? 2.5 : 1.5
+  ctx.globalAlpha = isFull ? 1 : 0.8
+  ctx.fill()
+  ctx.stroke()
+  ctx.globalAlpha = 1
+
+  ctx.strokeStyle = biome.coverAccent
+  ctx.lineWidth = isFull ? 1.5 : 1
+  ctx.beginPath()
+  if (biome.coverStyle === 'crystals') {
+    ctx.moveTo(cover.x + cover.width / 2, cover.y + 4)
+    ctx.lineTo(cover.x + cover.width * 0.35, cover.y + cover.height - 4)
+  } else if (biome.coverStyle === 'domes') {
+    ctx.ellipse(
+      cover.x + cover.width / 2,
+      cover.y + cover.height / 2,
+      cover.width / 4,
+      cover.height / 4,
+      0,
+      0,
+      Math.PI * 2
+    )
+  } else {
+    ctx.moveTo(cover.x + 6, cover.y + 6)
+    ctx.lineTo(cover.x + cover.width - 6, cover.y + cover.height - 6)
+  }
+  ctx.stroke()
+  ctx.restore()
+
+  ctx.fillStyle = isFull ? 'rgba(232, 228, 220, 0.35)' : 'rgba(232, 228, 220, 0.18)'
+  ctx.font = '8px monospace'
   ctx.fillText(isFull ? 'FULL' : 'HALF', cover.x + 4, cover.y + cover.height - 4)
+}
+
+function drawAmbientParticles(
+  ctx: CanvasRenderingContext2D,
+  biome: Biome,
+  elapsed: number,
+  width: number,
+  height: number
+): void {
+  ctx.fillStyle = biome.particleColor
+  for (let i = 0; i < biome.particleCount; i++) {
+    const phase = i * 7.31
+    const driftX = ((phase * 53.7 + elapsed * (8 + (i % 5) * 3)) % (width + 40)) - 20
+    const driftY = ((phase * 91.3 + Math.sin(elapsed * 0.6 + i) * 18 + elapsed * 5) % (height + 40)) - 20
+    const size = 1 + ((i * 13) % 3) * 0.6
+    ctx.globalAlpha = 0.4 + Math.sin(elapsed * 1.5 + i) * 0.3
+    ctx.beginPath()
+    ctx.arc(driftX, driftY, size, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  ctx.globalAlpha = 1
 }
 
 function drawTopDownSoldier(ctx: CanvasRenderingContext2D, unit: BattleUnit): void {
@@ -192,14 +303,15 @@ function drawDragSelect(ctx: CanvasRenderingContext2D, drag: NonNullable<BattleS
 
 export function renderBattle(ctx: CanvasRenderingContext2D, state: BattleState): void {
   const { width, height } = state
+  const biome = BIOMES[state.planetType]
 
   const gradient = ctx.createLinearGradient(0, 0, 0, height)
-  gradient.addColorStop(0, '#121820')
-  gradient.addColorStop(1, '#0a0e14')
+  gradient.addColorStop(0, biome.floorTop)
+  gradient.addColorStop(1, biome.floorBottom)
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, width, height)
 
-  ctx.strokeStyle = 'rgba(61, 79, 99, 0.25)'
+  ctx.strokeStyle = biome.gridColor
   ctx.lineWidth = 1
   for (let x = 0; x < width; x += 40) {
     ctx.beginPath()
@@ -214,11 +326,13 @@ export function renderBattle(ctx: CanvasRenderingContext2D, state: BattleState):
     ctx.stroke()
   }
 
-  ctx.fillStyle = 'rgba(201, 162, 39, 0.03)'
+  ctx.fillStyle = biome.ambientGlow
   ctx.fillRect(0, 0, width, height)
 
+  drawAmbientParticles(ctx, biome, state.elapsed, width, height)
+
   for (const cover of state.covers) {
-    drawCover(ctx, cover)
+    drawCover(ctx, cover, biome)
   }
 
   for (const explosion of state.explosions) {

@@ -730,6 +730,23 @@
   margin-top: 0.2rem;
 }
 
+.battle-biome {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  margin-top: 0.35rem;
+  color: var(--text-dim);
+  letter-spacing: 0.03em;
+}
+
+.battle-biome-name {
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+}
+
+.battle-biome-hazard {
+  color: var(--warning);
+}
+
 .battle-hud {
   display: flex;
   align-items: center;

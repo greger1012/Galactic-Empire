@@ -1,14 +1,25 @@
-import type { BattleCover, BattleState, BattleUnit } from './types'
+import type { TechModifiers } from '../game/research'
+import type { PlanetType } from '../game/types'
+import { BIOMES, generateBiomeCovers, type Biome } from './biomes'
+import type { BattleState, BattleUnit } from './types'
 
 const FIELD_WIDTH = 960
 const FIELD_HEIGHT = 540
+
+interface UnitStats {
+  health: number
+  damage: number
+  moveSpeed: number
+  range: number
+}
 
 function createUnit(
   team: 'player' | 'enemy',
   index: number,
   x: number,
   y: number,
-  label: string
+  label: string,
+  stats: UnitStats
 ): BattleUnit {
   return {
     id: `${team}-${index}`,
@@ -18,11 +29,11 @@ function createUnit(
     y,
     moveTargetX: null,
     moveTargetY: null,
-    health: team === 'player' ? 100 : 90,
-    maxHealth: team === 'player' ? 100 : 90,
-    damage: team === 'player' ? 14 : 12,
-    range: 155,
-    moveSpeed: team === 'player' ? 72 : 64,
+    health: stats.health,
+    maxHealth: stats.health,
+    damage: stats.damage,
+    range: stats.range,
+    moveSpeed: stats.moveSpeed,
     fireCooldown: Math.random() * 0.5,
     fireInterval: 0.55 + Math.random() * 0.25,
     state: 'idle',
@@ -44,7 +55,8 @@ function spawnSquad(
   count: number,
   baseX: number,
   baseY: number,
-  label: string
+  label: string,
+  stats: UnitStats
 ): BattleUnit[] {
   const units: BattleUnit[] = []
   const cols = Math.ceil(Math.sqrt(count))
@@ -60,24 +72,13 @@ function spawnSquad(
         i,
         baseX + offsetX + (Math.random() - 0.5) * 10,
         baseY + offsetY + (Math.random() - 0.5) * 10,
-        label
+        label,
+        stats
       )
     )
   }
 
   return units
-}
-
-function createCovers(): BattleCover[] {
-  return [
-    { x: 300, y: 150, width: 80, height: 48, level: 'full' },
-    { x: 470, y: 270, width: 100, height: 52, level: 'full' },
-    { x: 620, y: 130, width: 70, height: 44, level: 'half' },
-    { x: 390, y: 390, width: 90, height: 50, level: 'half' },
-    { x: 700, y: 350, width: 60, height: 60, level: 'full' },
-    { x: 200, y: 320, width: 55, height: 40, level: 'half' },
-    { x: 550, y: 80, width: 65, height: 38, level: 'half' },
-  ]
 }
 
 export function getPlayerUnitCount(fleetPower: number): number {
@@ -88,36 +89,70 @@ export function getEnemyUnitCount(defenseRating: number): number {
   return Math.min(18, Math.max(5, Math.floor(defenseRating / 5)))
 }
 
-export function createBattle(
-  planetId: string,
-  planetName: string,
-  enemyColor: string,
-  fleetPower: number,
+function playerStats(biome: Biome, mods: TechModifiers): UnitStats {
+  return {
+    health: 100 + mods.legionHealthBonus,
+    damage: Math.round(14 * mods.legionDamageMult),
+    moveSpeed: 72 * biome.moveSpeedMult * mods.legionSpeedMult,
+    range: 155 * biome.rangeMult,
+  }
+}
+
+function enemyStats(biome: Biome): UnitStats {
+  return {
+    health: 90,
+    damage: 12,
+    moveSpeed: 64 * biome.moveSpeedMult,
+    range: 155 * biome.rangeMult,
+  }
+}
+
+export interface BattleSetup {
+  planetId: string
+  planetName: string
+  planetType: PlanetType
+  enemyColor: string
+  fleetPower: number
   defenseRating: number
-): BattleState {
+  mods: TechModifiers
+}
+
+export function createBattle(setup: BattleSetup): BattleState {
+  const { planetId, planetName, planetType, enemyColor, fleetPower, defenseRating, mods } = setup
+  const biome = BIOMES[planetType]
   const playerCount = getPlayerUnitCount(fleetPower)
   const enemyCount = getEnemyUnitCount(defenseRating)
 
-  const playerUnits = spawnSquad('player', playerCount, 140, FIELD_HEIGHT / 2, 'Legionnaire')
+  const playerUnits = spawnSquad(
+    'player',
+    playerCount,
+    140,
+    FIELD_HEIGHT / 2,
+    'Legionnaire',
+    playerStats(biome, mods)
+  )
   const enemyUnits = spawnSquad(
     'enemy',
     enemyCount,
     FIELD_WIDTH - 140,
     FIELD_HEIGHT / 2,
-    'Defender'
+    'Defender',
+    enemyStats(biome)
   )
 
   return {
     active: true,
     planetId,
     planetName,
+    planetType,
     enemyColor,
+    playerSuppressionMult: mods.suppressionMult,
     status: 'active',
     paused: false,
     units: [...playerUnits, ...enemyUnits],
     tracers: [],
     explosions: [],
-    covers: createCovers(),
+    covers: generateBiomeCovers(biome, planetId, FIELD_WIDTH, FIELD_HEIGHT),
     selectedUnitIds: [],
     dragSelect: null,
     activeAbility: 'none',

@@ -35,7 +35,8 @@ function applyDamage(
   target: BattleUnit,
   tracers: BattleTracer[],
   tracerId: number,
-  hit: boolean
+  hit: boolean,
+  playerSuppressionMult: number
 ): number {
   const blocked = !hit
   tracers.push({
@@ -52,8 +53,10 @@ function applyDamage(
   if (hit) {
     const damage = applyCoverToDamage(attacker.damage, target)
     target.health -= damage
-    if (attacker.team === 'player' && Math.random() < SUPPRESS_CHANCE) {
-      applySuppress(target)
+    if (attacker.team === 'player') {
+      if (Math.random() < SUPPRESS_CHANCE) applySuppress(target)
+    } else if (Math.random() < SUPPRESS_CHANCE * 0.6) {
+      applySuppress(target, playerSuppressionMult)
     }
 
     if (target.health <= 0 && target.state !== 'dying' && target.state !== 'dead') {
@@ -171,7 +174,14 @@ export function updateBattle(state: BattleState, dt: number): BattleState {
       unit.stateTimer = 0
       unit.facing = Math.atan2(shootTarget.y - unit.y, shootTarget.x - unit.x)
       const hit = rollHit(unit, shootTarget, state.covers)
-      tracerId = applyDamage(unit, shootTarget, tracers, tracerId, hit)
+      tracerId = applyDamage(
+        unit,
+        shootTarget,
+        tracers,
+        tracerId,
+        hit,
+        state.playerSuppressionMult
+      )
       unit.fireCooldown = getFireInterval(unit)
       unit.shootTargetId = shootTarget.id
     } else if (unit.state === 'shooting' && unit.stateTimer > 0.18) {

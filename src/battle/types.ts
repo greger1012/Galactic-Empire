@@ -1,3 +1,5 @@
+import type { PlanetType } from '../game/types'
+
 export type BattleTeam = 'player' | 'enemy'
 
 export type UnitAnimState = 'idle' | 'moving' | 'shooting' | 'dying' | 'dead'
@@ -76,7 +78,10 @@ export interface BattleState {
   active: boolean
   planetId: string
   planetName: string
+  planetType: PlanetType
   enemyColor: string
+  /** Multiplier on suppression duration applied to player legionnaires (tech-driven). */
+  playerSuppressionMult: number
   status: BattleStatus
   paused: boolean
   units: BattleUnit[]
