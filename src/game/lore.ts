@@ -40,6 +40,18 @@ export const LORE = {
     enemy: 'Contested Domain',
   },
 
+  orbital: {
+    title: 'Void Engagement',
+    subtitle: 'Armada batteries duel planetary aegis before the legions deploy',
+    commit: 'Commit Orbital Assault',
+    deployLegions: 'Deploy Legions',
+    abort: 'Break Off Approach',
+    orbitalAegis: 'Orbital Aegis',
+    armadaStrength: 'Armada Strength',
+    doctrineLabel: 'Void Doctrine',
+    shipRolesTitle: 'Hull roles this phase',
+  },
+
   battle: {
     assaultTitle: 'Mandate Ground Assault',
     assaultSubtitle: 'Ascendancy legions engage planetary hostiles',

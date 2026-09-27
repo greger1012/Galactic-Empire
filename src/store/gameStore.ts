@@ -29,6 +29,7 @@ import {
   getTechModifiers,
   type TechId,
 } from '../game/research'
+import type { OrbitalEngagementResult } from '../battle/orbitalEngagement'
 import type { BuildingType, Fleet, GameState, ShipType } from '../game/types'
 import { useBattleStore } from './battleStore'
 
@@ -46,6 +47,13 @@ interface GameActions {
   setEmpireName: (name: string) => void
   dismissMandateGuide: () => void
   reopenMandateGuide: () => void
+  applyOrbitalEngagementResult: (
+    losses: Partial<Fleet>,
+    result: OrbitalEngagementResult,
+    planetName: string
+  ) => void
+  cancelOrbitalApproach: () => void
+  cancelOrbitalApproachAfterAnnihilation: (planetName: string) => void
 }
 
 type GameStore = GameState & GameActions
@@ -57,6 +65,15 @@ function applyFleetCasualties(fleet: Fleet, casualtyRate: number): Fleet {
   const result = { ...fleet }
   for (const type of Object.keys(result) as ShipType[]) {
     const loss = Math.floor(result[type] * casualtyRate)
+    result[type] = Math.max(0, result[type] - loss)
+  }
+  return result
+}
+
+function applyFleetCasualtiesFromPartial(fleet: Fleet, losses: Partial<Fleet>): Fleet {
+  const result = { ...fleet }
+  for (const type of Object.keys(losses) as ShipType[]) {
+    const loss = losses[type] ?? 0
     result[type] = Math.max(0, result[type] - loss)
   }
   return result
@@ -206,15 +223,69 @@ export const useGameStore = create<GameStore>()(
           mandateGuide: { ...state.mandateGuide, invasionIssued: true },
         })
 
-        useBattleStore.getState().startBattle({
-          planetId,
-          planetName: target.name,
-          planetType: target.type,
-          enemyFactionId: target.enemyFaction,
-          enemyColor: faction?.color ?? '#ff6b6b',
-          fleetPower: getFleetPower(state.fleet, mods),
-          defenseRating: target.defenseRating,
-          mods,
+        useBattleStore.getState().startOrbital(
+          {
+            planetId,
+            planetName: target.name,
+            planetType: target.type,
+            enemyFactionId: target.enemyFaction,
+            enemyColor: faction?.color ?? '#ff6b6b',
+            fleetPower: getFleetPower(state.fleet, mods),
+            defenseRating: target.defenseRating,
+            mods,
+          },
+          target.defenseRating
+        )
+      },
+
+      applyOrbitalEngagementResult: (losses, result, planetName) => {
+        const state = get()
+        const newFleet = applyFleetCasualtiesFromPartial(state.fleet, losses)
+        const outcomeLabel =
+          result.outcome === 'decisive'
+            ? 'Decisive void victory'
+            : result.outcome === 'repulsed'
+              ? 'Orbital repulse'
+              : 'Contested orbital lanes'
+
+        set({
+          fleet: newFleet,
+          events: [
+            createEvent(
+              'info',
+              `${outcomeLabel} at ${planetName}. ${result.chronicle} Aegis erosion ${Math.round(result.defenseSuppression * 100)}%.`
+            ),
+            ...state.events.slice(0, 49),
+          ],
+        })
+      },
+
+      cancelOrbitalApproach: () => {
+        const state = get()
+        const newFleet = applyFleetCasualties(state.fleet, 0.12)
+        set({
+          fleet: newFleet,
+          events: [
+            createEvent(
+              'warning',
+              'Orbital approach broken off. Escort screens lost in the withdrawal.'
+            ),
+            ...state.events.slice(0, 49),
+          ],
+        })
+      },
+
+      cancelOrbitalApproachAfterAnnihilation: (planetName) => {
+        const state = get()
+        set({
+          fleet: { scout: 0, frigate: 0, destroyer: 0, carrier: 0 },
+          events: [
+            createEvent(
+              'danger',
+              `The void armada was annihilated in orbit above ${planetName}. Mandate assault aborted.`
+            ),
+            ...state.events.slice(0, 49),
+          ],
         })
       },
 
@@ -292,7 +363,8 @@ export const useGameStore = create<GameStore>()(
       advanceTick: () => {
         const state = get()
         if (state.gameWon || state.gameOver) return
-        if (useBattleStore.getState().battle?.active) return
+        const battleStore = useBattleStore.getState()
+        if (battleStore.battle?.active || battleStore.orbital?.active) return
 
         const mods = getTechModifiers(state.research.researched)
         const production = calculateProduction(state.planets, mods)

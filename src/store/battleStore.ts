@@ -11,12 +11,35 @@ import {
   togglePause,
   updateBattle,
 } from '../battle/battleLogic'
+import {
+  getOrbitalFleetLosses,
+  resolveOrbitalEngagement,
+  type OrbitalDoctrine,
+} from '../battle/orbitalEngagement'
 import { createBattle, type BattleSetup } from '../battle/spawnBattle'
 import type { BattleState } from '../battle/types'
+import { getFleetPower, getTotalShips } from '../game/engine'
+import { getTechModifiers } from '../game/research'
+import { useGameStore } from './gameStore'
+
+export interface OrbitalPhaseState {
+  active: true
+  phase: 'doctrine' | 'results'
+  pendingSetup: BattleSetup
+  originalDefenseRating: number
+  doctrine: OrbitalDoctrine
+  result: ReturnType<typeof resolveOrbitalEngagement> | null
+}
 
 interface BattleStore {
   battle: BattleState | null
+  orbital: OrbitalPhaseState | null
   isDragging: boolean
+  startOrbital: (setup: BattleSetup, originalDefenseRating: number) => void
+  setOrbitalDoctrine: (doctrine: OrbitalDoctrine) => void
+  commitOrbitalAssault: () => void
+  proceedToGroundAssault: () => void
+  cancelOrbital: () => void
   startBattle: (setup: BattleSetup) => void
   update: (dt: number) => void
   handleMouseDown: (x: number, y: number, shiftKey: boolean) => void
@@ -34,10 +57,100 @@ const DRAG_THRESHOLD = 8
 
 export const useBattleStore = create<BattleStore>((set, get) => ({
   battle: null,
+  orbital: null,
   isDragging: false,
 
+  startOrbital: (setup, originalDefenseRating) => {
+    set({
+      orbital: {
+        active: true,
+        phase: 'doctrine',
+        pendingSetup: setup,
+        originalDefenseRating,
+        doctrine: 'balanced',
+        result: null,
+      },
+      battle: null,
+      isDragging: false,
+    })
+  },
+
+  setOrbitalDoctrine: (doctrine) => {
+    const { orbital } = get()
+    if (!orbital) return
+    set({ orbital: { ...orbital, doctrine } })
+  },
+
+  commitOrbitalAssault: () => {
+    const { orbital } = get()
+    if (!orbital || orbital.phase !== 'doctrine') return
+
+    const game = useGameStore.getState()
+    const mods = getTechModifiers(game.research.researched)
+    const result = resolveOrbitalEngagement(
+      game.fleet,
+      orbital.originalDefenseRating,
+      orbital.doctrine,
+      mods
+    )
+    const losses = getOrbitalFleetLosses(game.fleet, result.fleetLossRate)
+    game.applyOrbitalEngagementResult(losses, result, orbital.pendingSetup.planetName)
+
+    const fleetAfter = useGameStore.getState().fleet
+    if (getTotalShips(fleetAfter) === 0) {
+      useGameStore.getState().cancelOrbitalApproachAfterAnnihilation(orbital.pendingSetup.planetName)
+      set({ orbital: null })
+      return
+    }
+
+    set({
+      orbital: {
+        ...orbital,
+        phase: 'results',
+        result,
+      },
+    })
+  },
+
+  proceedToGroundAssault: () => {
+    const { orbital } = get()
+    if (!orbital?.result) return
+
+    const game = useGameStore.getState()
+    if (getTotalShips(game.fleet) === 0) {
+      game.cancelOrbitalApproachAfterAnnihilation(orbital.pendingSetup.planetName)
+      set({ orbital: null })
+      return
+    }
+    const mods = getTechModifiers(game.research.researched)
+    const result = orbital.result
+    const setup = orbital.pendingSetup
+    const groundDefense = Math.max(
+      8,
+      Math.floor(orbital.originalDefenseRating * (1 - result.defenseSuppression))
+    )
+
+    set({
+      battle: createBattle({
+        ...setup,
+        fleetPower: getFleetPower(game.fleet, mods),
+        defenseRating: groundDefense,
+        deploymentMult: result.deploymentMult,
+        legionDamageMult: result.legionDamageMult,
+        orbitalChronicle: result.chronicle,
+      }),
+      orbital: null,
+      isDragging: false,
+    })
+  },
+
+  cancelOrbital: () => {
+    useGameStore.getState().cancelOrbitalApproach()
+    set({ orbital: null, isDragging: false })
+  },
+
   startBattle: (setup) => {
-    set({ battle: createBattle(setup), isDragging: false })
+    set({ battle: createBattle(setup), isDragging: false, orbital: null })
   },
 
   update: (dt) => {

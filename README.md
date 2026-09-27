@@ -7,7 +7,7 @@ A browser-based space empire strategy game set during humanity's **Golden Age of
 1. **Follow the First Mandate Briefing** — Raise a Noospheric Throne Node, build a Void Forge Annexe, commission voidships, assault a contested world, and begin research.
 2. **Manage Helios Prime** — Upgrade infrastructure (Stratum Excavators, Helios Collectors, Vitae Domes, etc.) each mandate cycle.
 3. **Build the Void Armada** — Commission Spectre Corvettes, Lance Frigates, and heavier hulls from the Void Forge.
-4. **Mandate of Conquest** — Launch top-down tactical ground assaults on rival-held worlds (biome-specific battlefields, faction loadouts).
+4. **Mandate of Conquest** — Void engagement (pick a doctrine, trade orbital losses for aegis erosion) then top-down tactical ground assaults (biomes, faction loadouts). Destroyers, scouts, and carriers matter in orbit.
 5. **Win** — Annex all contested worlds while surviving rival **faction pulses** (reinforcements, raids, embargoes).
 
 ## Getting Started

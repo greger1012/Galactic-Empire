@@ -100,8 +100,9 @@ function spawnSquad(
   return units
 }
 
-export function getPlayerUnitCount(fleetPower: number): number {
-  return Math.min(14, Math.max(5, Math.floor(fleetPower / 7)))
+export function getPlayerUnitCount(fleetPower: number, deploymentMult = 1): number {
+  const base = Math.min(14, Math.max(5, Math.floor(fleetPower / 7)))
+  return Math.min(16, Math.max(4, Math.floor(base * deploymentMult)))
 }
 
 export function getEnemyUnitCount(defenseRating: number): number {
@@ -126,6 +127,9 @@ export interface BattleSetup {
   fleetPower: number
   defenseRating: number
   mods: TechModifiers
+  deploymentMult?: number
+  legionDamageMult?: number
+  orbitalChronicle?: string
 }
 
 export function createBattle(setup: BattleSetup): BattleState {
@@ -138,11 +142,18 @@ export function createBattle(setup: BattleSetup): BattleState {
     fleetPower,
     defenseRating,
     mods,
+    deploymentMult = 1,
+    legionDamageMult = 1,
+    orbitalChronicle,
   } = setup
   const biome = BIOMES[planetType]
-  const playerCount = getPlayerUnitCount(fleetPower)
+  const playerCount = getPlayerUnitCount(fleetPower, deploymentMult)
   const enemyCount = getEnemyUnitCount(defenseRating)
-  const sharedPlayerStats = playerStats(biome, mods)
+  const basePlayerStats = playerStats(biome, mods)
+  const sharedPlayerStats = {
+    ...basePlayerStats,
+    damage: Math.round(basePlayerStats.damage * legionDamageMult),
+  }
 
   const hostileSlots = buildHostileSlots(enemyCount, planetId, planetType, enemyFactionId)
 
@@ -198,5 +209,6 @@ export function createBattle(setup: BattleSetup): BattleState {
     elapsed: 0,
     width: FIELD_WIDTH,
     height: FIELD_HEIGHT,
+    orbitalChronicle,
   }
 }

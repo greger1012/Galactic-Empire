@@ -65,7 +65,7 @@ export function getMandateSteps(state: GameState): MandateStep[] {
     {
       id: 'firstAssault',
       title: 'Issue a Mandate of Conquest',
-      hint: 'Select a contested world on the Stellar Cartograph and launch a ground assault.',
+      hint: 'Select a contested world, fight the orbital aegis duel, then deploy legions to the surface.',
       done: state.mandateGuide.invasionIssued,
     },
     {

@@ -142,6 +142,9 @@ export function BattleOverlay() {
           <div>
             <h2>{LORE.battle.assaultTitle} — {battle.planetName}</h2>
             <p className="battle-subtitle">{LORE.battle.assaultSubtitle}</p>
+            {battle.orbitalChronicle && (
+              <p className="battle-orbital-chronicle">{battle.orbitalChronicle}</p>
+            )}
             <p className="battle-biome">
               <span className="battle-biome-name">{biome.name}</span>
               <span className="battle-biome-tagline"> · {biome.tagline}</span>

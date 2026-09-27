@@ -4,6 +4,7 @@ import { LORE } from '../game/lore'
 import { useBattleStore } from '../store/battleStore'
 import { useGameStore } from '../store/gameStore'
 import { BattleOverlay } from './BattleOverlay'
+import { OrbitalOverlay } from './OrbitalOverlay'
 import { EventLog } from './EventLog'
 import { FleetPanel } from './FleetPanel'
 import { GalaxyMap } from './GalaxyMap'
@@ -16,16 +17,18 @@ export function Game() {
   const tickCount = useGameStore((s) => s.tickCount)
   const gameWon = useGameStore((s) => s.gameWon)
   const battleActive = useBattleStore((s) => s.battle?.active ?? false)
+  const orbitalActive = useBattleStore((s) => s.orbital?.active ?? false)
+  const invasionPaused = battleActive || orbitalActive
   const reopenMandateGuide = useGameStore((s) => s.reopenMandateGuide)
   const mandateDismissed = useGameStore((s) => s.mandateGuide.dismissed)
 
   useEffect(() => {
-    if (battleActive) return
+    if (invasionPaused) return
     const interval = setInterval(() => {
       useGameStore.getState().advanceTick()
     }, TICK_INTERVAL_MS)
     return () => clearInterval(interval)
-  }, [battleActive])
+  }, [invasionPaused])
 
   return (
     <div className="game">
@@ -69,6 +72,7 @@ export function Game() {
         </p>
       </footer>
 
+      <OrbitalOverlay />
       <BattleOverlay />
     </div>
   )

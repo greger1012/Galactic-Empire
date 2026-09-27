@@ -110,4 +110,6 @@ export interface BattleState {
   elapsed: number
   width: number
   height: number
+  /** Summary line from the preceding orbital phase. */
+  orbitalChronicle?: string
 }
