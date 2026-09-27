@@ -105,6 +105,11 @@ export interface ResearchState {
   progress: number
 }
 
+export interface MandateGuideState {
+  dismissed: boolean
+  invasionIssued: boolean
+}
+
 export interface GameState {
   empireName: string
   tickCount: number
@@ -114,6 +119,7 @@ export interface GameState {
   selectedPlanetId: string
   events: GameEvent[]
   research: ResearchState
+  mandateGuide: MandateGuideState
   gameWon: boolean
   gameOver: boolean
 }

@@ -8,6 +8,7 @@ import { EventLog } from './EventLog'
 import { FleetPanel } from './FleetPanel'
 import { GalaxyMap } from './GalaxyMap'
 import { PlanetPanel } from './PlanetPanel'
+import { MandateGuide } from './MandateGuide'
 import { ResearchPanel } from './ResearchPanel'
 import { ResourceBar } from './ResourceBar'
 
@@ -15,6 +16,8 @@ export function Game() {
   const tickCount = useGameStore((s) => s.tickCount)
   const gameWon = useGameStore((s) => s.gameWon)
   const battleActive = useBattleStore((s) => s.battle?.active ?? false)
+  const reopenMandateGuide = useGameStore((s) => s.reopenMandateGuide)
+  const mandateDismissed = useGameStore((s) => s.mandateGuide.dismissed)
 
   useEffect(() => {
     if (battleActive) return
@@ -39,6 +42,7 @@ export function Game() {
 
       <main className="game-layout">
         <div className="left-column">
+          <MandateGuide />
           <GalaxyMap />
           <EventLog />
         </div>
@@ -51,8 +55,17 @@ export function Game() {
 
       <footer className="game-footer">
         <p>
-          {LORE.cycleLabel} {tickCount} · Noospheric feeds update each cycle · Reclaim all
-          contested mandates to restore the Golden Age
+          {LORE.cycleLabel} {tickCount} · Rival mandates stir every 15 cycles · Reclaim all
+          contested worlds to extend the Golden Age
+          {mandateDismissed && (
+            <>
+              {' '}
+              ·{' '}
+              <button type="button" className="footer-link" onClick={reopenMandateGuide}>
+                Reopen mandate briefing
+              </button>
+            </>
+          )}
         </p>
       </footer>
 

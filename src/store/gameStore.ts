@@ -18,7 +18,9 @@ import {
   getTotalShips,
   subtractResources,
 } from '../game/engine'
+import { runFactionPulse } from '../game/factionPulse'
 import { createInitialState } from '../game/initialState'
+import { DEFAULT_MANDATE_GUIDE } from '../game/mandateGuide'
 import { WIN_CHRONICLE } from '../game/lore'
 import {
   TECHS,
@@ -42,11 +44,14 @@ interface GameActions {
   advanceTick: () => void
   resetGame: () => void
   setEmpireName: (name: string) => void
+  dismissMandateGuide: () => void
+  reopenMandateGuide: () => void
 }
 
 type GameStore = GameState & GameActions
 
 const DEFAULT_RESEARCH: GameState['research'] = { researched: [], current: null, progress: 0 }
+const DEFAULT_MANDATE = DEFAULT_MANDATE_GUIDE
 
 function applyFleetCasualties(fleet: Fleet, casualtyRate: number): Fleet {
   const result = { ...fleet }
@@ -197,6 +202,10 @@ export const useGameStore = create<GameStore>()(
           : undefined
 
         const mods = getTechModifiers(state.research.researched)
+        set({
+          mandateGuide: { ...state.mandateGuide, invasionIssued: true },
+        })
+
         useBattleStore.getState().startBattle({
           planetId,
           planetName: target.name,
@@ -323,11 +332,20 @@ export const useGameStore = create<GameStore>()(
           return { ...p, population }
         })
 
+        let tickPlanets = planets
+        let tickResources = resources
         let research = state.research
         let events = state.events
+
+        const pulse = runFactionPulse(state.tickCount + 1, tickPlanets, tickResources)
+        tickPlanets = pulse.planets
+        tickResources = pulse.resources
+        if (pulse.events.length > 0) {
+          events = [...pulse.events, ...events].slice(0, 50)
+        }
         if (research.current) {
           const tech = TECHS[research.current as TechId]
-          const rate = calculateResearchRate(getThroneNodeLevels(state.planets), mods)
+          const rate = calculateResearchRate(getThroneNodeLevels(tickPlanets), mods)
           const progress = research.progress + rate
 
           if (tech && progress >= tech.cost) {
@@ -339,11 +357,11 @@ export const useGameStore = create<GameStore>()(
               ...events.slice(0, 49),
             ]
             if (newMods.defenseMult !== mods.defenseMult) {
-              for (let i = 0; i < planets.length; i++) {
-                if (planets[i].owner === 'player') {
-                  planets[i] = {
-                    ...planets[i],
-                    defenseRating: calculatePlanetDefense(planets[i], newMods),
+              for (let i = 0; i < tickPlanets.length; i++) {
+                if (tickPlanets[i].owner === 'player') {
+                  tickPlanets[i] = {
+                    ...tickPlanets[i],
+                    defenseRating: calculatePlanetDefense(tickPlanets[i], newMods),
                   }
                 }
               }
@@ -355,8 +373,8 @@ export const useGameStore = create<GameStore>()(
 
         set({
           tickCount: state.tickCount + 1,
-          resources,
-          planets,
+          resources: tickResources,
+          planets: tickPlanets,
           research,
           events,
         })
@@ -365,6 +383,12 @@ export const useGameStore = create<GameStore>()(
       resetGame: () => set(createInitialState()),
 
       setEmpireName: (name) => set({ empireName: name }),
+
+      dismissMandateGuide: () =>
+        set((s) => ({ mandateGuide: { ...s.mandateGuide, dismissed: true } })),
+
+      reopenMandateGuide: () =>
+        set((s) => ({ mandateGuide: { ...s.mandateGuide, dismissed: false } })),
     }),
     {
       name: 'galactic-empire-save-v2',
@@ -377,6 +401,7 @@ export const useGameStore = create<GameStore>()(
         selectedPlanetId: state.selectedPlanetId,
         events: state.events,
         research: state.research,
+        mandateGuide: state.mandateGuide,
         gameWon: state.gameWon,
         gameOver: state.gameOver,
       }),
@@ -386,6 +411,7 @@ export const useGameStore = create<GameStore>()(
           ...current,
           ...saved,
           research: saved.research ?? DEFAULT_RESEARCH,
+          mandateGuide: saved.mandateGuide ?? DEFAULT_MANDATE,
         }
       },
     }

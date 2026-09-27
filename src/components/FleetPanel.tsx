@@ -2,6 +2,7 @@ import { SHIP_INFO } from '../game/constants'
 import { getShipCost } from '../game/engine'
 import { LORE } from '../game/lore'
 import type { ShipType } from '../game/types'
+import { getMandateFocus } from '../game/mandateGuide'
 import { useFleetPower, useGameStore, useTechModifiers } from '../store/gameStore'
 
 export function FleetPanel() {
@@ -10,11 +11,12 @@ export function FleetPanel() {
   const buildShip = useGameStore((s) => s.buildShip)
   const fleetPower = useFleetPower()
   const mods = useTechModifiers()
+  const mandateFocus = useGameStore((s) => getMandateFocus(s))
 
   const totalShips = (Object.values(fleet) as number[]).reduce((a, b) => a + b, 0)
 
   return (
-    <section className="panel fleet-panel">
+    <section className={`panel fleet-panel${mandateFocus === 'fleet' ? ' mandate-focus' : ''}`}>
       <h2>{LORE.fleetTitle}</h2>
       <div className="fleet-summary">
         <span>Voidships Commissioned: {totalShips}</span>

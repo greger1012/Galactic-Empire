@@ -2,6 +2,7 @@ import { ENEMY_FACTIONS, PLANET_TYPE_INFO, getPlanetTypeSummary } from '../game/
 import { LORE } from '../game/lore'
 import { getPlanetEpithet } from '../game/names'
 import type { Planet } from '../game/types'
+import { getMandateFocus } from '../game/mandateGuide'
 import { useFleetPower, useGameStore } from '../store/gameStore'
 
 export function GalaxyMap() {
@@ -10,6 +11,7 @@ export function GalaxyMap() {
   const selectPlanet = useGameStore((s) => s.selectPlanet)
   const initiateInvasion = useGameStore((s) => s.initiateInvasion)
   const fleetPower = useFleetPower()
+  const mandateFocus = useGameStore((s) => getMandateFocus(s))
 
   const playerPlanets = planets.filter((p) => p.owner === 'player')
   const enemyPlanets = planets.filter((p) => p.owner === 'enemy')
@@ -77,7 +79,7 @@ export function GalaxyMap() {
           </p>
           {selectedPlanet.owner === 'enemy' && (
             <button
-              className="btn btn-attack"
+              className={`btn btn-attack${mandateFocus === 'invasion' ? ' mandate-focus' : ''}`}
               disabled={fleetPower === 0}
               onClick={() => initiateInvasion(selectedPlanet.id)}
             >

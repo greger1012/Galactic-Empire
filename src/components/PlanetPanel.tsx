@@ -2,8 +2,10 @@ import { BUILDING_INFO, ENEMY_FACTIONS, PLANET_SPECIALIZATION_LABELS, PLANET_TYP
 import { getBuildingCost, getBuildingLevel, getEffectiveMaxPopulation } from '../game/engine'
 import { LORE } from '../game/lore'
 import { getPlanetEpithet } from '../game/names'
+import { getMandateFocus } from '../game/mandateGuide'
 import type { BuildingType } from '../game/types'
 import { useGameStore, useProductionRates, useTechModifiers } from '../store/gameStore'
+import { EmpireNoosphereStrip } from './EmpireNoosphereStrip'
 
 function formatBonus(value: number): string {
   const percent = Math.round(value * 100)
@@ -20,6 +22,7 @@ export function PlanetPanel() {
   const upgradeBuilding = useGameStore((s) => s.upgradeBuilding)
   const rates = useProductionRates()
   const mods = useTechModifiers()
+  const mandateFocus = useGameStore((s) => getMandateFocus(s))
 
   if (!planet) return null
 
@@ -68,19 +71,19 @@ export function PlanetPanel() {
         </div>
         <div className="trait-grid">
           <div className="trait-stat">
-            <span>⛏️ Minerals</span>
+            <span>⛏️ {LORE.resourceLabels.minerals}</span>
             <span>{formatBonus(typeInfo.mineralBonus)}</span>
           </div>
           <div className="trait-stat">
-            <span>⚡ Energy</span>
+            <span>⚡ {LORE.resourceLabels.energy}</span>
             <span>{formatBonus(typeInfo.energyBonus)}</span>
           </div>
           <div className="trait-stat">
-            <span>🌾 Food</span>
+            <span>🌾 {LORE.resourceLabels.food}</span>
             <span>{formatBonus(typeInfo.foodBonus)}</span>
           </div>
           <div className="trait-stat">
-            <span>💰 Credits</span>
+            <span>⚜️ {LORE.resourceLabels.credits}</span>
             <span>{formatBonus(typeInfo.creditBonus)}</span>
           </div>
         </div>
@@ -125,6 +128,8 @@ export function PlanetPanel() {
         )}
       </div>
 
+      {isPlayer && <EmpireNoosphereStrip />}
+
       {isPlayer && (
         <div className="buildings">
           <h3>{LORE.infrastructureTitle}</h3>
@@ -141,7 +146,10 @@ export function PlanetPanel() {
                 resources.credits >= cost.credits
 
               return (
-                <div key={type} className="building-card">
+                <div
+                  key={type}
+                  className={`building-card${mandateFocus === type ? ' mandate-focus' : ''}`}
+                >
                   <div className="building-icon">{info.icon}</div>
                   <div className="building-info">
                     <h4>{info.name}</h4>
@@ -160,7 +168,7 @@ export function PlanetPanel() {
                       <span className="cost">
                         ⛏️{cost.minerals} ⚡{cost.energy}
                         {cost.food > 0 && ` 🌾${cost.food}`}
-                        {cost.credits > 0 && ` 💰${cost.credits}`}
+                        {cost.credits > 0 && ` ⚜️${cost.credits}`}
                       </span>
                       Upgrade
                     </button>

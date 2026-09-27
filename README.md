@@ -1,13 +1,14 @@
 # Ascendancy of Iron Suns
 
-A browser-based space empire strategy game set during humanity's Golden Age of innovation. Command the Solar Ascendancy from your throne-world, extract adamant and lumin, commission voidships, and bring the contested stars under a single mandate.
+A browser-based space empire strategy game set during humanity's **Golden Age of innovation** — not a fallen age, and not salvaged relic-tech. Command the **Solar Ascendancy** from throne-world **Helios Prime**, extract **adamant** and **lumin**, direct the **Noosphere**, commission voidships, and bring contested mandates under a single throne law.
 
 ## How to Play
 
-1. **Manage Terra Prime** — Upgrade buildings to produce minerals, energy, and food each cycle.
-2. **Build a Fleet** — Construct a Shipyard, then build scouts, frigates, destroyers, and carriers.
-3. **Deploy Ground Forces** — Launch a top-down tactical assault when invading enemy worlds.
-4. **Win** — Unite all worlds under your empire.
+1. **Follow the First Mandate Briefing** — Raise a Noospheric Throne Node, build a Void Forge Annexe, commission voidships, assault a contested world, and begin research.
+2. **Manage Helios Prime** — Upgrade infrastructure (Stratum Excavators, Helios Collectors, Vitae Domes, etc.) each mandate cycle.
+3. **Build the Void Armada** — Commission Spectre Corvettes, Lance Frigates, and heavier hulls from the Void Forge.
+4. **Mandate of Conquest** — Launch top-down tactical ground assaults on rival-held worlds (biome-specific battlefields, faction loadouts).
+5. **Win** — Annex all contested worlds while surviving rival **faction pulses** (reinforcements, raids, embargoes).
 
 ## Getting Started
 
@@ -16,33 +17,27 @@ npm install
 npm run dev
 ```
 
-Open the URL shown in the terminal (usually `http://localhost:5173`).
+Open the URL shown in the terminal (usually `http://localhost:5173`). Use **New Mandate** to reset progress. Saves use browser local storage (`galactic-empire-save-v2`).
 
-## Game Mechanics
+## Resources
 
-- **Resources**: Minerals, Energy, Food, Credits — produced by buildings each second.
-- **Buildings**: Extraction Hub, Solar Array, Hydroponics, Shipyard, Planetary Shield, Command Center.
-- **Ships**: Scout, Frigate, Destroyer, Carrier — each with different combat power.
-- **Ground Combat**: Top-down tactical battles with animated legionnaire placeholders — select units, advance, auto-fire.
-- **Combat**: Fleet power determines deployment size; planetary defense determines enemy troop count.
-- **Planet Types**: 12 world types with specializations — farming, civilization, mining, industrial, and strategic dead worlds with unique resource bonuses and survivability.
-- **Save**: Progress is automatically saved to your browser's local storage.
+| Internal key | In-game name |
+|--------------|----------------|
+| minerals | Adamant |
+| energy | Lumin |
+| food | Sustenance |
+| credits | Sovereign Marks |
 
-## Planet Types
+## Core Systems
 
-| Type | Role | Highlights |
-|------|------|------------|
-| Terran | Balanced | Solid starter world |
-| Oceanic / Jungle / Ice | Farming | High food output and population growth |
-| Habitable | Civilization | Huge population caps and credit bonuses |
-| Volcanic / Desert / Asteroid / Toxic / Crystalline | Mining | Rich minerals, harsh conditions |
-| Gas Giant | Industrial | Best energy production |
-| Barren | Strategic | Nearly dead, but controls trade routes for defense and credits |
-
-Survivability affects food demand, population growth, and recovery after conquest. Strategic worlds like **Sentinel Drift** are barely habitable but grant powerful bonuses.
+- **Infrastructure** — Stratum Excavator, Helios Collector Array, Vitae Synthesis Dome, Void Forge Annexe, Aegis Pylon Network, Noospheric Throne Node.
+- **Noospheric Research** — 13 technologies; insight per cycle scales with **Throne Node tiers** empire-wide.
+- **Planet types** — 12 specializations (farming, mining, strategic chokepoints, etc.).
+- **Rival mandates** — Kryll Forge-Clans, Vexar Synod, Zynthian Concord, Void Reavers; periodic pulses every 15 cycles.
+- **Tactical combat** — Cover, suppression, grenades, procedural legion sprites, faction weapons.
 
 ## Tech Stack
 
 - React 19 + TypeScript
 - Vite
-- Zustand (state management + persistence)
+- Zustand (state + persistence)

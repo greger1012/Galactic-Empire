@@ -1,4 +1,5 @@
 import { ENEMY_PLANETS, createEnemyPlanet, getPlanetMaxPopulation } from './constants'
+import { DEFAULT_MANDATE_GUIDE } from './mandateGuide'
 import { LORE, OPENING_CHRONICLE } from './lore'
 import { PLANET_LORE_NAMES } from './names'
 import type { GameState } from './types'
@@ -51,6 +52,7 @@ export function createInitialState(): GameState {
       current: null,
       progress: 0,
     },
+    mandateGuide: { ...DEFAULT_MANDATE_GUIDE },
     gameWon: false,
     gameOver: false,
   }

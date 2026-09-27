@@ -6,6 +6,7 @@ import {
   type TechBranch,
   type TechId,
 } from '../game/research'
+import { getEmpireNoosphereSummary, getMandateFocus } from '../game/mandateGuide'
 import { useGameStore, useResearchRate } from '../store/gameStore'
 
 const BRANCHES: TechBranch[] = ['economy', 'military', 'science']
@@ -14,6 +15,8 @@ export function ResearchPanel() {
   const research = useGameStore((s) => s.research)
   const startResearch = useGameStore((s) => s.startResearch)
   const rate = useResearchRate()
+  const noosphere = useGameStore((s) => getEmpireNoosphereSummary(s))
+  const mandateFocus = useGameStore((s) => getMandateFocus(s))
 
   const current = research.current ? TECHS[research.current as TechId] : null
   const progressPct = current ? Math.min(100, (research.progress / current.cost) * 100) : 0
@@ -22,8 +25,12 @@ export function ResearchPanel() {
     : 0
 
   return (
-    <section className="panel research-panel">
+    <section className={`panel research-panel${mandateFocus === 'research' ? ' mandate-focus' : ''}`}>
       <h2>Noospheric Research</h2>
+      <p className="research-empire-rate">
+        Empire: {noosphere.throneNodeTiers} throne-node tiers · {noosphere.insightPerCycle.toFixed(1)}{' '}
+        insight / cycle
+      </p>
 
       <div className="research-status">
         {current ? (
