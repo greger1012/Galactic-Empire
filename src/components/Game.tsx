@@ -9,6 +9,7 @@ import { EventLog } from './EventLog'
 import { FleetPanel } from './FleetPanel'
 import { GalaxyMap } from './GalaxyMap'
 import { PlanetPanel } from './PlanetPanel'
+import { ChroniclePanel } from './ChroniclePanel'
 import { MandateGuide } from './MandateGuide'
 import { ResearchPanel } from './ResearchPanel'
 import { ResourceBar } from './ResourceBar'
@@ -16,6 +17,7 @@ import { ResourceBar } from './ResourceBar'
 export function Game() {
   const tickCount = useGameStore((s) => s.tickCount)
   const gameWon = useGameStore((s) => s.gameWon)
+  const victoryKind = useGameStore((s) => s.victoryKind)
   const battleActive = useBattleStore((s) => s.battle?.active ?? false)
   const orbitalActive = useBattleStore((s) => s.orbital?.active ?? false)
   const invasionPaused = battleActive || orbitalActive
@@ -38,14 +40,20 @@ export function Game() {
 
       {gameWon && (
         <div className="victory-banner">
-          <h2>☀️ {LORE.victoryTitle}</h2>
-          <p>{LORE.victoryMessage}</p>
+          <h2>
+            ☀️{' '}
+            {victoryKind === 'mastery' ? LORE.masteryVictoryTitle : LORE.victoryTitle}
+          </h2>
+          <p>
+            {victoryKind === 'mastery' ? LORE.masteryVictoryMessage : LORE.victoryMessage}
+          </p>
         </div>
       )}
 
       <main className="game-layout">
         <div className="left-column">
           <MandateGuide />
+          <ChroniclePanel />
           <GalaxyMap />
           <EventLog />
         </div>

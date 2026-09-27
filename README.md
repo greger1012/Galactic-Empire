@@ -8,7 +8,8 @@ A browser-based space empire strategy game set during humanity's **Golden Age of
 2. **Manage Helios Prime** — Upgrade infrastructure (Stratum Excavators, Helios Collectors, Vitae Domes, etc.) each mandate cycle.
 3. **Build the Void Armada** — Commission Spectre Corvettes, Lance Frigates, and heavier hulls from the Void Forge.
 4. **Mandate of Conquest** — Void engagement (pick a doctrine, trade orbital losses for aegis erosion) then top-down tactical ground assaults (biomes, faction loadouts). Destroyers, scouts, and carriers matter in orbit.
-5. **Win** — Annex all contested worlds while surviving rival **faction pulses** (reinforcements, raids, embargoes).
+5. **Win** — Annex all contested worlds **or** fulfill **three Imperial Chronicle mandates** for a Mandate of Mastery (vitae belts, Noospheric triad, Helios megacity, void dominance, stellar reach).
+6. **Survive rivals** — Faction pulses every 15 cycles (reinforcements, raids, embargoes).
 
 ## Getting Started
 

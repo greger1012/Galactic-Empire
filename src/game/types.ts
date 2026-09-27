@@ -110,6 +110,19 @@ export interface MandateGuideState {
   invasionIssued: boolean
 }
 
+export type VictoryKind = 'conquest' | 'mastery'
+
+export type ChronicleMandateId =
+  | 'vitaeBelt'
+  | 'noosphericTriad'
+  | 'heliosThrone'
+  | 'voidDominance'
+  | 'stellarReach'
+
+export interface ChronicleState {
+  completed: ChronicleMandateId[]
+}
+
 export interface GameState {
   empireName: string
   tickCount: number
@@ -120,6 +133,8 @@ export interface GameState {
   events: GameEvent[]
   research: ResearchState
   mandateGuide: MandateGuideState
+  chronicle: ChronicleState
+  victoryKind: VictoryKind | null
   gameWon: boolean
   gameOver: boolean
 }

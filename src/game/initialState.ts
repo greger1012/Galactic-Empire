@@ -1,4 +1,5 @@
 import { ENEMY_PLANETS, createEnemyPlanet, getPlanetMaxPopulation } from './constants'
+import { DEFAULT_CHRONICLE_STATE } from './chronicleMandates'
 import { DEFAULT_MANDATE_GUIDE } from './mandateGuide'
 import { LORE, OPENING_CHRONICLE } from './lore'
 import { PLANET_LORE_NAMES } from './names'
@@ -53,6 +54,8 @@ export function createInitialState(): GameState {
       progress: 0,
     },
     mandateGuide: { ...DEFAULT_MANDATE_GUIDE },
+    chronicle: { completed: [...DEFAULT_CHRONICLE_STATE.completed] },
+    victoryKind: null,
     gameWon: false,
     gameOver: false,
   }

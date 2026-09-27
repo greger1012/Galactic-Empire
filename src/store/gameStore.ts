@@ -20,6 +20,7 @@ import {
 } from '../game/engine'
 import { runFactionPulse } from '../game/factionPulse'
 import { createInitialState } from '../game/initialState'
+import { DEFAULT_CHRONICLE_STATE, syncChronicleMandates } from '../game/chronicleMandates'
 import { DEFAULT_MANDATE_GUIDE } from '../game/mandateGuide'
 import { WIN_CHRONICLE } from '../game/lore'
 import {
@@ -60,6 +61,13 @@ type GameStore = GameState & GameActions
 
 const DEFAULT_RESEARCH: GameState['research'] = { researched: [], current: null, progress: 0 }
 const DEFAULT_MANDATE = DEFAULT_MANDATE_GUIDE
+const DEFAULT_CHRONICLE = DEFAULT_CHRONICLE_STATE
+
+function chroniclePatch(state: GameState, partial: Partial<GameState>): Partial<GameState> {
+  const merged = { ...state, ...partial } as GameState
+  const sync = syncChronicleMandates(merged)
+  return { ...partial, ...sync }
+}
 
 function applyFleetCasualties(fleet: Fleet, casualtyRate: number): Fleet {
   const result = { ...fleet }
@@ -135,17 +143,19 @@ export const useGameStore = create<GameStore>()(
           return { ...updated, defenseRating: calculatePlanetDefense(updated, mods) }
         })
 
-        set({
-          resources: subtractResources(state.resources, cost),
-          planets,
-          events: [
-            createEvent(
-              'success',
-              `Infrastructure upgraded: ${info.name} now at tier ${currentLevel + 1} on ${planet.name}.`
-            ),
-            ...state.events.slice(0, 49),
-          ],
-        })
+        set(
+          chroniclePatch(state, {
+            resources: subtractResources(state.resources, cost),
+            planets,
+            events: [
+              createEvent(
+                'success',
+                `Infrastructure upgraded: ${info.name} now at tier ${currentLevel + 1} on ${planet.name}.`
+              ),
+              ...state.events.slice(0, 49),
+            ],
+          })
+        )
       },
 
       buildShip: (shipType) => {
@@ -170,14 +180,16 @@ export const useGameStore = create<GameStore>()(
         const cost = getShipCost(shipType, getTechModifiers(state.research.researched))
         if (!canAfford(state.resources, cost)) return
 
-        set({
-          resources: subtractResources(state.resources, cost),
-          fleet: { ...state.fleet, [shipType]: state.fleet[shipType] + 1 },
-          events: [
-            createEvent('success', `${SHIP_INFO[shipType].name} commissioned into the armada.`),
-            ...state.events.slice(0, 49),
-          ],
-        })
+        set(
+          chroniclePatch(state, {
+            resources: subtractResources(state.resources, cost),
+            fleet: { ...state.fleet, [shipType]: state.fleet[shipType] + 1 },
+            events: [
+              createEvent('success', `${SHIP_INFO[shipType].name} commissioned into the armada.`),
+              ...state.events.slice(0, 49),
+            ],
+          })
+        )
       },
 
       startResearch: (techId) => {
@@ -302,9 +314,13 @@ export const useGameStore = create<GameStore>()(
           getTechModifiers(state.research.researched)
         )
         let gameWon = state.gameWon
+        let victoryKind = state.victoryKind
 
         const enemyRemaining = planets.filter((p) => p.owner === 'enemy').length
-        if (enemyRemaining === 0) gameWon = true
+        if (enemyRemaining === 0) {
+          gameWon = true
+          victoryKind = 'conquest'
+        }
 
         const events = [
           createEvent(
@@ -314,11 +330,19 @@ export const useGameStore = create<GameStore>()(
           ...state.events.slice(0, 49),
         ]
 
-        if (gameWon) {
+        if (victoryKind === 'conquest' && gameWon) {
           events.unshift(createEvent('success', WIN_CHRONICLE))
         }
 
-        set({ fleet: newFleet, planets, events, gameWon })
+        set(
+          chroniclePatch(state, {
+            fleet: newFleet,
+            planets,
+            events,
+            gameWon,
+            victoryKind,
+          })
+        )
       },
 
       retreatBattle: (planetId) => {
@@ -443,13 +467,15 @@ export const useGameStore = create<GameStore>()(
           }
         }
 
-        set({
-          tickCount: state.tickCount + 1,
-          resources: tickResources,
-          planets: tickPlanets,
-          research,
-          events,
-        })
+        set(
+          chroniclePatch(state, {
+            tickCount: state.tickCount + 1,
+            resources: tickResources,
+            planets: tickPlanets,
+            research,
+            events,
+          })
+        )
       },
 
       resetGame: () => set(createInitialState()),
@@ -474,6 +500,8 @@ export const useGameStore = create<GameStore>()(
         events: state.events,
         research: state.research,
         mandateGuide: state.mandateGuide,
+        chronicle: state.chronicle,
+        victoryKind: state.victoryKind,
         gameWon: state.gameWon,
         gameOver: state.gameOver,
       }),
@@ -484,6 +512,8 @@ export const useGameStore = create<GameStore>()(
           ...saved,
           research: saved.research ?? DEFAULT_RESEARCH,
           mandateGuide: saved.mandateGuide ?? DEFAULT_MANDATE,
+          chronicle: saved.chronicle ?? { completed: [...DEFAULT_CHRONICLE.completed] },
+          victoryKind: saved.victoryKind ?? null,
         }
       },
     }

@@ -1119,6 +1119,126 @@
   to { opacity: 1; }
 }
 
+/* Imperial chronicles */
+.chronicle-panel {
+  border-color: rgba(110, 196, 216, 0.25);
+}
+
+.chronicle-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: -0.25rem 0 0.75rem;
+  line-height: 1.4;
+}
+
+.chronicle-mastery-track {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.chronicle-mastery-bar {
+  grid-column: 1 / -1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.chronicle-mastery-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent));
+}
+
+.chronicle-mastery-count {
+  color: var(--accent-cyan);
+}
+
+.chronicle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chronicle-card {
+  display: flex;
+  gap: 0.65rem;
+  padding: 0.6rem 0.7rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.chronicle-card.done {
+  opacity: 0.75;
+  border-color: rgba(201, 162, 39, 0.35);
+}
+
+.chronicle-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.chronicle-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.chronicle-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+
+.chronicle-title-row strong {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  color: var(--accent-bright);
+}
+
+.chronicle-progress,
+.chronicle-done {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--accent-cyan);
+}
+
+.chronicle-done {
+  color: var(--accent);
+}
+
+.chronicle-body p {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.chronicle-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  margin: 0.35rem 0;
+  overflow: hidden;
+}
+
+.chronicle-bar-fill {
+  height: 100%;
+  background: var(--accent-cyan);
+}
+
+.chronicle-reward {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-dim);
+}
+
 /* Mandate briefing */
 .mandate-guide-panel {
   border-color: rgba(201, 162, 39, 0.35);

@@ -20,6 +20,13 @@ export const LORE = {
   victoryTitle: 'Mandate Fulfilled',
   victoryMessage:
     'The fractured void kneels before the Iron Suns. A new chapter of the Golden Age begins.',
+  masteryVictoryTitle: 'Mandate of Mastery',
+  masteryVictoryMessage:
+    'Three great chronicle mandates stand fulfilled. The Golden Age expands by brilliance as much as by conquest.',
+
+  chroniclePanelTitle: 'Imperial Chronicles',
+  chroniclePanelSubtitle:
+    'Fulfill three mandates to proclaim a Mandate of Mastery — or conquer every contested world.',
 
   resourceLabels: {
     minerals: 'Adamant',
