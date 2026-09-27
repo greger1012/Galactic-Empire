@@ -1,5 +1,6 @@
 import { ENEMY_FACTIONS, PLANET_TYPE_INFO, getPlanetTypeSummary } from '../game/constants'
 import { LORE } from '../game/lore'
+import { getDeepVoidTierLabel } from '../game/deepVoid'
 import { getPlanetMapPosition } from '../game/frontierGeneration'
 import { getPlanetEpithet } from '../game/names'
 import type { Planet } from '../game/types'
@@ -44,7 +45,7 @@ export function GalaxyMap() {
           return (
             <button
               key={planet.id}
-              className={`planet-node ${planet.owner} ${isSelected ? 'selected' : ''}`}
+              className={`planet-node ${planet.owner}${planet.isFrontierBoss ? ' frontier-boss' : ''} ${isSelected ? 'selected' : ''}`}
               style={{
                 left: `${x}%`,
                 top: `${y}%`,
@@ -52,9 +53,11 @@ export function GalaxyMap() {
                   faction?.color ?? (planet.owner === 'player' ? '#c9a227' : '#c44b4b'),
               }}
               onClick={() => selectPlanet(planet.id)}
-              title={`${planet.name} — ${getPlanetTypeSummary(planet.type)}`}
+              title={`${planet.name}${planet.isFrontierBoss ? ' (Apex Bastion)' : ''} — ${getPlanetTypeSummary(planet.type)}${planet.frontierWave ? ` · ${getDeepVoidTierLabel(planet.frontierWave)}` : ''}`}
             >
-              <span className="node-icon">{typeInfo.icon}</span>
+              <span className="node-icon">
+                {planet.isFrontierBoss ? '👑' : typeInfo.icon}
+              </span>
               <span className="node-name">{planet.name}</span>
             </button>
           )
@@ -83,11 +86,13 @@ export function GalaxyMap() {
           </p>
           {selectedPlanet.owner === 'enemy' && (
             <button
-              className={`btn btn-attack${mandateFocus === 'invasion' ? ' mandate-focus' : ''}`}
+              className={`btn btn-attack${mandateFocus === 'invasion' ? ' mandate-focus' : ''}${selectedPlanet.isFrontierBoss ? ' boss-assault' : ''}`}
               disabled={fleetPower === 0}
               onClick={() => initiateInvasion(selectedPlanet.id)}
             >
-              ⚔️ Issue Mandate of Conquest
+              {selectedPlanet.isFrontierBoss
+                ? '👑 Shatter Apex Bastion'
+                : '⚔️ Issue Mandate of Conquest'}
             </button>
           )}
           {selectedPlanet.owner === 'player' && (

@@ -1,4 +1,5 @@
 import { ENEMY_FACTIONS } from './constants'
+import { getDeepVoidPulsePressure } from './deepVoid'
 import { createEvent } from './engine'
 import { getFactionLore } from './lore'
 import type { GameEvent, Planet, Resources } from './types'
@@ -39,8 +40,10 @@ export interface FactionPulseResult {
 export function runFactionPulse(
   tickCount: number,
   planets: Planet[],
-  resources: Resources
+  resources: Resources,
+  frontierWave = 0
 ): FactionPulseResult {
+  const pulsePressure = 1 + getDeepVoidPulsePressure(frontierWave)
   if (tickCount <= 0 || tickCount % FACTION_PULSE_INTERVAL !== 0) {
     return { planets, resources, events: [] }
   }
@@ -109,8 +112,14 @@ export function runFactionPulse(
         break
       }
       case 'raid': {
-        const mineralLoss = Math.max(3, Math.floor(nextResources.minerals * (0.04 + lore.aggression * 0.04)))
-        const energyLoss = Math.max(2, Math.floor(nextResources.energy * (0.03 + lore.aggression * 0.03)))
+        const mineralLoss = Math.max(
+          3,
+          Math.floor(nextResources.minerals * (0.04 + lore.aggression * 0.04) * pulsePressure)
+        )
+        const energyLoss = Math.max(
+          2,
+          Math.floor(nextResources.energy * (0.03 + lore.aggression * 0.03) * pulsePressure)
+        )
         nextResources = {
           ...nextResources,
           minerals: Math.max(0, nextResources.minerals - mineralLoss),
@@ -125,7 +134,7 @@ export function runFactionPulse(
         break
       }
       case 'embargo': {
-        const creditLoss = Math.max(2, Math.floor(4 + lore.aggression * 10))
+        const creditLoss = Math.max(2, Math.floor((4 + lore.aggression * 10) * pulsePressure))
         nextResources = {
           ...nextResources,
           credits: Math.max(0, nextResources.credits - creditLoss),

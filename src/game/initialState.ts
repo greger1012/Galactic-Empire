@@ -55,7 +55,11 @@ export function createInitialState(): GameState {
       progress: 0,
     },
     mandateGuide: { ...DEFAULT_MANDATE_GUIDE },
-    chronicle: { completed: [...DEFAULT_CHRONICLE_STATE.completed] },
+    chronicle: {
+      completed: [...DEFAULT_CHRONICLE_STATE.completed],
+      frontierCompleted: [...DEFAULT_CHRONICLE_STATE.frontierCompleted],
+      bossesDefeated: DEFAULT_CHRONICLE_STATE.bossesDefeated,
+    },
     victoryKind: null,
     gameWon: false,
     gameOver: false,

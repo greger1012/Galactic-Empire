@@ -9,8 +9,10 @@ A browser-based space empire strategy game set during humanity's **Golden Age of
 3. **Build the Void Armada** — Commission Spectre Corvettes, Lance Frigates, and heavier hulls from the Void Forge.
 4. **Mandate of Conquest** — Void engagement (pick a doctrine, trade orbital losses for aegis erosion) then top-down tactical ground assaults (biomes, faction loadouts). Destroyers, scouts, and carriers matter in orbit.
 5. **Triumph (not game over)** — Annex the founding sector **or** fulfill **three Imperial Chronicle mandates** for a Mandate of Mastery. Either milestone unlocks a dismissible victory banner; the mandate cycle **keeps running**.
-6. **Endless void frontiers** — When every contested world in the current sector falls, cartographers spawn the next **procedural wave** (scaled rivals, new names, stable map positions). Conquer, build, and research without a hard ending.
-7. **Survive rivals** — Faction pulses every 15 cycles (reinforcements, raids, embargoes).
+6. **Endless void frontiers** — When every contested world in the current sector falls, cartographers spawn the next **procedural wave** (scaled rivals, new names, stable map positions). Each wave includes a **Void Regent apex bastion** (wave boss).
+7. **Deep void tiers** — Shallow → mid → deep → abyssal difficulty: higher aegis, more legions, and harsher faction pulses the farther you push.
+8. **Void Frontier Chronicles** — Separate long goals (first horizon, apex hunter, deep void mandate, outer dominion) with sovereign mark rewards that do not count toward Mandate of Mastery.
+9. **Survive rivals** — Faction pulses every 15 cycles (reinforcements, raids, embargoes).
 
 ## Getting Started
 

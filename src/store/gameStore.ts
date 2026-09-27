@@ -21,6 +21,7 @@ import {
 import { runFactionPulse } from '../game/factionPulse'
 import { createInitialState } from '../game/initialState'
 import { DEFAULT_CHRONICLE_STATE, syncChronicleMandates } from '../game/chronicleMandates'
+import { syncFrontierChronicles } from '../game/frontierChronicles'
 import { mergeFrontierState, spawnNextFrontierWave } from '../game/frontierGeneration'
 import { DEFAULT_MANDATE_GUIDE } from '../game/mandateGuide'
 import { WIN_CHRONICLE } from '../game/lore'
@@ -67,8 +68,10 @@ const DEFAULT_CHRONICLE = DEFAULT_CHRONICLE_STATE
 
 function chroniclePatch(state: GameState, partial: Partial<GameState>): Partial<GameState> {
   const merged = { ...state, ...partial } as GameState
-  const sync = syncChronicleMandates(merged)
-  return { ...partial, ...sync }
+  const imperial = syncChronicleMandates(merged)
+  const merged2 = { ...merged, ...imperial } as GameState
+  const frontier = syncFrontierChronicles(merged2)
+  return { ...partial, ...imperial, ...frontier }
 }
 
 function applyFleetCasualties(fleet: Fleet, casualtyRate: number): Fleet {
@@ -247,6 +250,8 @@ export const useGameStore = create<GameStore>()(
             fleetPower: getFleetPower(state.fleet, mods),
             defenseRating: target.defenseRating,
             mods,
+            frontierWave: target.frontierWave ?? 0,
+            isFrontierBoss: target.isFrontierBoss ?? false,
           },
           target.defenseRating
         )
@@ -308,6 +313,7 @@ export const useGameStore = create<GameStore>()(
         const target = state.planets.find((p) => p.id === planetId)
         if (!target) return
 
+        const bossDefeated = target.isFrontierBoss === true
         const casualtyRate = Math.min(0.7, Math.max(0.1, 1 - survivalRatio * 0.85))
         const newFleet = applyFleetCasualties(state.fleet, casualtyRate)
         let planets = conquerPlanet(
@@ -339,28 +345,41 @@ export const useGameStore = create<GameStore>()(
         const events = [
           createEvent(
             'success',
-            `Mandate secured. ${target.name} now acknowledges Throne law.`
+            bossDefeated
+              ? `Apex shattered. ${target.name} falls — the void frontier staggers.`
+              : `Mandate secured. ${target.name} now acknowledges Throne law.`
           ),
           ...spawnEvents,
           ...state.events.slice(0, 49),
         ]
+
+        const chronicle = bossDefeated
+          ? {
+              ...state.chronicle,
+              bossesDefeated: state.chronicle.bossesDefeated + 1,
+            }
+          : state.chronicle
 
         if (firstSectorConquest && victoryKind === 'conquest') {
           events.unshift(createEvent('success', WIN_CHRONICLE))
         }
 
         set(
-          chroniclePatch(state, {
-            fleet: newFleet,
-            planets,
-            frontier,
-            events,
-            gameWon,
-            victoryKind,
-            victoryBannerDismissed: firstSectorConquest
-              ? false
-              : state.victoryBannerDismissed,
-          })
+          chroniclePatch(
+            { ...state, chronicle },
+            {
+              fleet: newFleet,
+              planets,
+              frontier,
+              events,
+              gameWon,
+              victoryKind,
+              chronicle,
+              victoryBannerDismissed: firstSectorConquest
+                ? false
+                : state.victoryBannerDismissed,
+            }
+          )
         )
       },
 
@@ -452,7 +471,12 @@ export const useGameStore = create<GameStore>()(
         let research = state.research
         let events = state.events
 
-        const pulse = runFactionPulse(state.tickCount + 1, tickPlanets, tickResources)
+        const pulse = runFactionPulse(
+          state.tickCount + 1,
+          tickPlanets,
+          tickResources,
+          state.frontier.wave
+        )
         tickPlanets = pulse.planets
         tickResources = pulse.resources
         if (pulse.events.length > 0) {
@@ -553,7 +577,12 @@ export const useGameStore = create<GameStore>()(
             : (saved.events ?? current.events),
           research: saved.research ?? DEFAULT_RESEARCH,
           mandateGuide: saved.mandateGuide ?? DEFAULT_MANDATE,
-          chronicle: saved.chronicle ?? { completed: [...DEFAULT_CHRONICLE.completed] },
+          chronicle: {
+            completed: saved.chronicle?.completed ?? [...DEFAULT_CHRONICLE.completed],
+            frontierCompleted:
+              saved.chronicle?.frontierCompleted ?? [...DEFAULT_CHRONICLE.frontierCompleted],
+            bossesDefeated: saved.chronicle?.bossesDefeated ?? DEFAULT_CHRONICLE.bossesDefeated,
+          },
           victoryKind: saved.victoryKind ?? null,
           victoryBannerDismissed: saved.victoryBannerDismissed ?? false,
         }

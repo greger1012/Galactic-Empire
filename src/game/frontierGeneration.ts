@@ -5,6 +5,12 @@ import {
   getPlanetMaxPopulation,
 } from './constants'
 import { createEvent } from './engine'
+import {
+  getDeepVoidDefenseMult,
+  getDeepVoidPopulationMult,
+  getDeepVoidTierLabel,
+  getFrontierBossDefenseMult,
+} from './deepVoid'
 import type { FrontierState, GameEvent, Planet, PlanetType } from './types'
 
 const FRONTIER_PLANET_TYPES: PlanetType[] = [
@@ -145,8 +151,29 @@ function planetsInWave(wave: number): number {
 }
 
 function scalePopulation(base: number, wave: number): number {
-  const mult = 1 + wave * 0.12
+  const frontierWave = wave + 1
+  const mult = (1 + wave * 0.12) * getDeepVoidPopulationMult(frontierWave)
   return Math.floor(base * mult)
+}
+
+const BOSS_FAVORED_TYPES: PlanetType[] = [
+  'barren',
+  'volcanic',
+  'crystalline',
+  'toxic',
+  'habitable',
+]
+
+function applyFrontierScaling(planet: Planet, frontierWave: number, isBoss: boolean): Planet {
+  let defenseRating = Math.floor(planet.defenseRating * getDeepVoidDefenseMult(frontierWave))
+  if (isBoss) {
+    defenseRating = Math.floor(defenseRating * getFrontierBossDefenseMult(frontierWave))
+  }
+  return {
+    ...planet,
+    defenseRating: Math.min(120, defenseRating),
+    population: isBoss ? Math.floor(planet.population * 1.35) : planet.population,
+  }
 }
 
 function createProceduralTemplate(
@@ -168,7 +195,7 @@ function createProceduralTemplate(
   const basePop = rng.int(800, 4500)
 
   return {
-    id: `frontier-${wave}-${index}`,
+    id: `frontier-${wave + 1}-${index}`,
     name,
     type,
     owner: 'enemy',
@@ -178,6 +205,31 @@ function createProceduralTemplate(
     epithet,
     procedural: true,
     frontierWave: wave + 1,
+  }
+}
+
+function createBossTemplate(
+  wave: number,
+  rng: SeededRng
+): Omit<Planet, 'buildings' | 'defenseRating'> {
+  const faction = rng.pick(ENEMY_FACTIONS)
+  const type = rng.pick(BOSS_FAVORED_TYPES)
+  const frontierWave = wave + 1
+  const baseCap = rng.int(6000, 14000)
+  const basePop = rng.int(3500, 8000)
+
+  return {
+    id: `frontier-${frontierWave}-apex`,
+    name: `${faction.shortName} Void Regent`,
+    type,
+    owner: 'enemy',
+    enemyFaction: faction.id,
+    population: scalePopulation(basePop, wave),
+    maxPopulation: getPlanetMaxPopulation(type, scalePopulation(baseCap, wave)),
+    epithet: `Apex Bastion — ${getDeepVoidTierLabel(frontierWave)} · Wave ${frontierWave}`,
+    procedural: true,
+    frontierWave,
+    isFrontierBoss: true,
   }
 }
 
@@ -195,16 +247,24 @@ export function spawnNextFrontierWave(
   const nextWave = frontier.wave + 1
   const seed = frontierWaveSeed(frontier.sectorSeed, nextWave)
   const rng = new SeededRng(seed)
-  const count = planetsInWave(nextWave)
+  const regularCount = planetsInWave(nextWave) - 1
+  const frontierWave = nextWave
 
-  const newEnemies = Array.from({ length: count }, (_, i) =>
-    createEnemyPlanet(createProceduralTemplate(nextWave - 1, i, rng))
-  )
+  const regulars = Array.from({ length: regularCount }, (_, i) => {
+    const raw = createEnemyPlanet(createProceduralTemplate(nextWave - 1, i, rng))
+    return applyFrontierScaling(raw, frontierWave, false)
+  })
+
+  const bossRaw = createEnemyPlanet(createBossTemplate(nextWave - 1, rng))
+  const boss = applyFrontierScaling(bossRaw, frontierWave, true)
+
+  const newEnemies = [...regulars, boss]
+  const tierLabel = getDeepVoidTierLabel(frontierWave)
 
   const events = [
     createEvent(
       'info',
-      `Cartographers chart Void Frontier ${nextWave}: ${count} contested mandates materialize beyond the last iron-sun beacon. The Golden Age does not end — it advances.`
+      `Cartographers chart Void Frontier ${nextWave} (${tierLabel}): ${regularCount} mandates and a ${boss.name} apex bastion appear beyond the last iron-sun beacon.`
     ),
   ]
 

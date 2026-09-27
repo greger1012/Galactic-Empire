@@ -1,3 +1,4 @@
+import { getDeepVoidCombatMult } from '../game/deepVoid'
 import type { TechModifiers } from '../game/research'
 import type { PlanetType } from '../game/types'
 import { BIOMES, generateBiomeCovers, type Biome } from './biomes'
@@ -105,8 +106,19 @@ export function getPlayerUnitCount(fleetPower: number, deploymentMult = 1): numb
   return Math.min(16, Math.max(4, Math.floor(base * deploymentMult)))
 }
 
-export function getEnemyUnitCount(defenseRating: number): number {
-  return Math.min(18, Math.max(5, Math.floor(defenseRating / 5)))
+export function getEnemyUnitCount(
+  defenseRating: number,
+  opts?: { isFrontierBoss?: boolean; frontierWave?: number }
+): number {
+  let count = Math.min(18, Math.max(5, Math.floor(defenseRating / 5)))
+  const wave = opts?.frontierWave ?? 0
+  if (wave > 0) {
+    count = Math.min(22, Math.floor(count * (1 + wave * 0.05)))
+  }
+  if (opts?.isFrontierBoss) {
+    count = Math.min(24, count + 4)
+  }
+  return count
 }
 
 function playerStats(biome: Biome, mods: TechModifiers): UnitStats {
@@ -130,6 +142,8 @@ export interface BattleSetup {
   deploymentMult?: number
   legionDamageMult?: number
   orbitalChronicle?: string
+  frontierWave?: number
+  isFrontierBoss?: boolean
 }
 
 export function createBattle(setup: BattleSetup): BattleState {
@@ -145,10 +159,13 @@ export function createBattle(setup: BattleSetup): BattleState {
     deploymentMult = 1,
     legionDamageMult = 1,
     orbitalChronicle,
+    frontierWave = 0,
+    isFrontierBoss = false,
   } = setup
   const biome = BIOMES[planetType]
   const playerCount = getPlayerUnitCount(fleetPower, deploymentMult)
-  const enemyCount = getEnemyUnitCount(defenseRating)
+  const enemyCount = getEnemyUnitCount(defenseRating, { frontierWave, isFrontierBoss })
+  const deepCombatMult = getDeepVoidCombatMult(frontierWave) * (isFrontierBoss ? 1.12 : 1)
   const basePlayerStats = playerStats(biome, mods)
   const sharedPlayerStats = {
     ...basePlayerStats,
@@ -175,8 +192,8 @@ export function createBattle(setup: BattleSetup): BattleState {
         label: slot.label,
         archetype: slot.unitArchetype,
         stats: {
-          health: stats.health,
-          damage: stats.damage,
+          health: Math.round(stats.health * deepCombatMult),
+          damage: Math.round(stats.damage * deepCombatMult),
           moveSpeed: stats.moveSpeed,
           range: stats.range,
           fireInterval: stats.fireInterval,

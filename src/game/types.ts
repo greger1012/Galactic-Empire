@@ -70,6 +70,8 @@ export interface Planet {
   epithet?: string
   procedural?: boolean
   frontierWave?: number
+  /** One apex bastion per void frontier wave — extra aegis and legions. */
+  isFrontierBoss?: boolean
 }
 
 export interface FrontierState {
@@ -128,8 +130,16 @@ export type ChronicleMandateId =
   | 'voidDominance'
   | 'stellarReach'
 
+export type FrontierChronicleMandateId =
+  | 'firstHorizon'
+  | 'apexHunter'
+  | 'deepVoidMandate'
+  | 'outerDominion'
+
 export interface ChronicleState {
   completed: ChronicleMandateId[]
+  frontierCompleted: FrontierChronicleMandateId[]
+  bossesDefeated: number
 }
 
 export interface GameState {

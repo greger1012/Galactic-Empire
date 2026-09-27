@@ -327,6 +327,17 @@
   background: rgba(196, 75, 75, 0.08);
 }
 
+.planet-node.enemy.frontier-boss {
+  background: rgba(155, 126, 200, 0.15);
+  box-shadow: 0 0 12px rgba(201, 162, 39, 0.35);
+  border-width: 2px;
+}
+
+.btn-attack.boss-assault {
+  border-color: rgba(201, 162, 39, 0.65);
+  background: linear-gradient(135deg, rgba(155, 126, 200, 0.2), rgba(196, 75, 75, 0.15));
+}
+
 .node-icon {
   font-size: 1.5rem;
 }
@@ -1192,6 +1203,21 @@
 .chronicle-card.done {
   opacity: 0.75;
   border-color: rgba(201, 162, 39, 0.35);
+}
+
+.chronicle-frontier-heading {
+  margin: 1.25rem 0 0.25rem;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--accent-cyan);
+}
+
+.chronicle-card.frontier {
+  border-color: rgba(110, 196, 216, 0.2);
+}
+
+.chronicle-bar-fill.frontier {
+  background: linear-gradient(90deg, #5a8fa8, var(--accent-cyan));
 }
 
 .chronicle-icon {

@@ -2,7 +2,14 @@ import { PLANET_TYPE_INFO } from './constants'
 import { createEvent } from './engine'
 import { LORE } from './lore'
 import { TECHS, type TechBranch } from './research'
-import type { ChronicleMandateId, GameEvent, GameState, Resources, VictoryKind } from './types'
+import type {
+  ChronicleMandateId,
+  FrontierChronicleMandateId,
+  GameEvent,
+  GameState,
+  Resources,
+  VictoryKind,
+} from './types'
 
 export type { ChronicleMandateId, VictoryKind }
 
@@ -10,6 +17,8 @@ export const MASTERY_MANDATE_COUNT = 3
 
 export const DEFAULT_CHRONICLE_STATE = {
   completed: [] as ChronicleMandateId[],
+  frontierCompleted: [] as FrontierChronicleMandateId[],
+  bossesDefeated: 0,
 }
 
 export interface ChronicleMandateDef {

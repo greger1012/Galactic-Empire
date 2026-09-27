@@ -29,6 +29,9 @@ export const LORE = {
   chroniclePanelTitle: 'Imperial Chronicles',
   chroniclePanelSubtitle:
     'Fulfill three mandates for Mastery — or annex the founding sector. Beyond either triumph, procedural void frontiers await.',
+  frontierChronicleTitle: 'Void Frontier Chronicles',
+  frontierChronicleSubtitle:
+    'Long-form goals for deep-mandate play — apex hunters, outer colonies, and abyssal reach. Rewards do not count toward Mastery.',
 
   resourceLabels: {
     minerals: 'Adamant',
