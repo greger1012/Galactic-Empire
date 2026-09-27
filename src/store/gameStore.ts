@@ -104,7 +104,7 @@ export const useGameStore = create<GameStore>()(
           events: [
             createEvent(
               'success',
-              `Archaeotech upgraded: ${info.name} now at tier ${currentLevel + 1} on ${planet.name}.`
+              `Infrastructure upgraded: ${info.name} now at tier ${currentLevel + 1} on ${planet.name}.`
             ),
             ...state.events.slice(0, 49),
           ],

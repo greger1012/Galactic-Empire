@@ -1,6 +1,6 @@
 import type { BuildingType, ShipType } from './types'
 
-/** Golden-age archaeotech building names and flavor text. */
+/** Golden-age building names and flavor text — state-of-the-art, not salvaged. */
 export const BUILDING_LORE: Record<
   BuildingType,
   { name: string; description: string; icon: string }
@@ -54,7 +54,7 @@ export const SHIP_LORE: Record<
   },
   destroyer: {
     name: 'Obelisk Destroyer',
-    description: 'Heavy line-ship mounting archaeotech lance batteries.',
+    description: 'Heavy line-ship mounting the newest generation of lance batteries.',
     icon: '💥',
   },
   carrier: {

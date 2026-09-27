@@ -1,9 +1,9 @@
 import type { ResourceType } from './types'
 
-/** Display names for the Solar Ascendancy setting — humanity at its zenith. */
+/** Display names for the Solar Ascendancy setting — humanity in a living golden age of invention. */
 export const LORE = {
   gameTitle: 'Ascendancy of Iron Suns',
-  gameSubtitle: 'Age of Archaeotech · Mandate 11,402',
+  gameSubtitle: 'Golden Age of Innovation · Mandate 11,402',
 
   empireDefaultName: 'Solar Ascendancy',
   empireTitle: 'Throne Mandate',
@@ -15,11 +15,11 @@ export const LORE = {
   chronicleTitle: 'Noospheric Ledger',
   galaxyMapTitle: 'Stellar Cartograph',
   fleetTitle: 'Void Armada Command',
-  infrastructureTitle: 'Archaeotech Infrastructure',
+  infrastructureTitle: 'Planetary Infrastructure',
 
   victoryTitle: 'Mandate Fulfilled',
   victoryMessage:
-    'The fractured void kneels before the Iron Suns. The Golden Age endures — for now.',
+    'The fractured void kneels before the Iron Suns. A new chapter of the Golden Age begins.',
 
   resourceLabels: {
     minerals: 'Adamant',
@@ -42,7 +42,7 @@ export const LORE = {
 
   battle: {
     assaultTitle: 'Mandate Ground Assault',
-    assaultSubtitle: 'Archaeotech legions engage planetary hostiles',
+    assaultSubtitle: 'Ascendancy legions engage planetary hostiles',
     legionLabel: 'Legionnaires',
     hostilesLabel: 'Hostiles',
     victory: 'Mandate Secured',
@@ -70,7 +70,7 @@ export const FACTION_LORE: FactionLore[] = [
     shortName: 'Kryll',
     motto: 'Iron remembers. Fire endures.',
     description:
-      'Militant industrial houses that hoard archaeotech forges and refuse Throne sovereignty.',
+      'Militant industrial houses that guard their own forge-patents and refuse Throne sovereignty.',
     color: '#b83a2a',
     aggression: 0.7,
   },
@@ -90,7 +90,7 @@ export const FACTION_LORE: FactionLore[] = [
     shortName: 'Zynthian',
     motto: 'Life perfected cannot be denied.',
     description:
-      'Bio-engineered utopians who view the Ascendancy as a decadent relic of old Earth.',
+      'Bio-engineered utopians who believe the Ascendancy clings to an outdated vision of humanity.',
     color: '#3d8f5f',
     aggression: 0.4,
   },
@@ -98,9 +98,9 @@ export const FACTION_LORE: FactionLore[] = [
     id: 'pirates',
     name: 'Void Reavers',
     shortName: 'Reavers',
-    motto: 'The fallen age left scraps enough for kings.',
+    motto: 'The frontier belongs to whoever holds it.',
     description:
-      'Scavenger fleets and exile cults picking over the ruins of collapsed mandates.',
+      'Freebooter fleets and exile syndicates raiding the unpoliced fringes of the expanding void.',
     color: '#c47f1a',
     aggression: 0.8,
   },
@@ -111,9 +111,9 @@ export function getFactionLore(factionId: string): FactionLore | undefined {
 }
 
 export const OPENING_CHRONICLE =
-  'Mandate transmitted. You are named Warden of Helios Prime — last intact throne-world of the Solar Ascendancy. ' +
-  'Raise archaeotech infrastructure, commission void warships, and reclaim the fractured stars before the Golden Age dims forever.'
+  'Mandate transmitted. You are named Warden of Helios Prime, throne-world of the Solar Ascendancy. ' +
+  'Raise cutting-edge infrastructure, commission void warships, and bring the contested stars under a single mandate.'
 
 export const WIN_CHRONICLE =
-  'Mandate absolute. Every contested world now flies the Iron Sun banner. Historians will call this the Second Dawn — ' +
-  'if your dynasty survives what comes next.'
+  'Mandate absolute. Every contested world now flies the Iron Sun banner. ' +
+  'Historians will call this the Second Dawn — the moment the Ascendancy became the Galaxy.'
