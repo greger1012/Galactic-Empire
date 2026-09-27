@@ -3,6 +3,7 @@ import {
   PLANET_TYPE_INFO,
   SHIP_INFO,
 } from './constants'
+import { getTechModifiers, type TechModifiers } from './research'
 import type {
   BuildingType,
   Fleet,
@@ -14,6 +15,17 @@ import type {
 } from './types'
 
 let eventCounter = 0
+
+const NO_TECH = getTechModifiers([])
+
+function scaleCost(cost: Resources, mult: number): Resources {
+  return {
+    minerals: Math.floor(cost.minerals * mult),
+    energy: Math.floor(cost.energy * mult),
+    food: Math.floor(cost.food * mult),
+    credits: Math.floor(cost.credits * mult),
+  }
+}
 
 export function createEvent(
   type: GameEvent['type'],
@@ -36,16 +48,16 @@ export function getBuildingLevel(
 
 export function getBuildingCost(
   type: BuildingType,
-  currentLevel: number
+  currentLevel: number,
+  mods: TechModifiers = NO_TECH
 ): Resources {
   const info = BUILDING_INFO[type]
-  const multiplier = Math.pow(info.costMultiplier, currentLevel)
-  return {
-    minerals: Math.floor(info.baseCost.minerals * multiplier),
-    energy: Math.floor(info.baseCost.energy * multiplier),
-    food: Math.floor(info.baseCost.food * multiplier),
-    credits: Math.floor(info.baseCost.credits * multiplier),
-  }
+  const multiplier = Math.pow(info.costMultiplier, currentLevel) * mods.buildingCostMult
+  return scaleCost(info.baseCost, multiplier)
+}
+
+export function getShipCost(type: ShipType, mods: TechModifiers = NO_TECH): Resources {
+  return scaleCost(SHIP_INFO[type].cost, mods.shipCostMult)
 }
 
 export function canAfford(resources: Resources, cost: Resources): boolean {
@@ -69,7 +81,10 @@ export function subtractResources(
   }
 }
 
-export function calculateProduction(planets: Planet[]): ProductionRates {
+export function calculateProduction(
+  planets: Planet[],
+  mods: TechModifiers = NO_TECH
+): ProductionRates {
   const rates: ProductionRates = {
     minerals: 0,
     energy: 0,
@@ -101,7 +116,19 @@ export function calculateProduction(planets: Planet[]): ProductionRates {
     }
   }
 
+  rates.minerals *= mods.mineralMult
+  rates.energy *= mods.energyMult
+  rates.food *= mods.foodMult
+  rates.credits *= mods.creditMult
+
   return rates
+}
+
+/** Total Noospheric Throne Node tiers across the empire; the source of research output. */
+export function getThroneNodeLevels(planets: Planet[]): number {
+  return planets
+    .filter((p) => p.owner === 'player')
+    .reduce((sum, p) => sum + getBuildingLevel(p, 'commandCenter'), 0)
 }
 
 export function calculateConsumption(planets: Planet[]): ProductionRates {
@@ -132,7 +159,10 @@ export function calculateConsumption(planets: Planet[]): ProductionRates {
   return consumption
 }
 
-export function calculatePlanetDefense(planet: Planet): number {
+export function calculatePlanetDefense(
+  planet: Planet,
+  mods: TechModifiers = NO_TECH
+): number {
   const typeInfo = PLANET_TYPE_INFO[planet.type]
   let defense = 10 + typeInfo.baseDefenseBonus + typeInfo.strategicBonus
 
@@ -145,6 +175,8 @@ export function calculatePlanetDefense(planet: Planet): number {
 
   if (planet.owner === 'enemy') {
     defense += 20
+  } else {
+    defense = Math.floor(defense * mods.defenseMult)
   }
 
   return defense
@@ -160,6 +192,13 @@ export function getPopulationGrowthModifier(planet: Planet, empireFoodSurplus: b
   return 0.2
 }
 
+export function getEffectiveMaxPopulation(
+  planet: Planet,
+  mods: TechModifiers = NO_TECH
+): number {
+  return Math.floor(planet.maxPopulation * mods.populationCapMult)
+}
+
 export function getMinimumPopulation(planet: Planet): number {
   const typeInfo = PLANET_TYPE_INFO[planet.type]
   if (typeInfo.specialization === 'strategic') return 25
@@ -167,11 +206,12 @@ export function getMinimumPopulation(planet: Planet): number {
   return 100
 }
 
-export function getFleetPower(fleet: Fleet): number {
-  return (Object.keys(fleet) as ShipType[]).reduce(
+export function getFleetPower(fleet: Fleet, mods: TechModifiers = NO_TECH): number {
+  const base = (Object.keys(fleet) as ShipType[]).reduce(
     (total, type) => total + fleet[type] * SHIP_INFO[type].attackPower,
     0
   )
+  return Math.floor(base * mods.fleetPowerMult)
 }
 
 export interface CombatResult {

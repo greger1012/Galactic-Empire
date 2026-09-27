@@ -8,6 +8,7 @@ import { EventLog } from './EventLog'
 import { FleetPanel } from './FleetPanel'
 import { GalaxyMap } from './GalaxyMap'
 import { PlanetPanel } from './PlanetPanel'
+import { ResearchPanel } from './ResearchPanel'
 import { ResourceBar } from './ResourceBar'
 
 export function Game() {
@@ -44,6 +45,7 @@ export function Game() {
         <div className="right-column">
           <PlanetPanel />
           <FleetPanel />
+          <ResearchPanel />
         </div>
       </main>
 

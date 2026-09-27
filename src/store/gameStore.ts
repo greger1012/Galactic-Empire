@@ -9,14 +9,24 @@ import {
   createEvent,
   getBuildingCost,
   getBuildingLevel,
+  getEffectiveMaxPopulation,
   getFleetPower,
   getMinimumPopulation,
   getPopulationGrowthModifier,
+  getShipCost,
+  getThroneNodeLevels,
   getTotalShips,
   subtractResources,
 } from '../game/engine'
 import { createInitialState } from '../game/initialState'
 import { WIN_CHRONICLE } from '../game/lore'
+import {
+  TECHS,
+  calculateResearchRate,
+  canResearch,
+  getTechModifiers,
+  type TechId,
+} from '../game/research'
 import type { BuildingType, Fleet, GameState, ShipType } from '../game/types'
 import { useBattleStore } from './battleStore'
 
@@ -24,6 +34,7 @@ interface GameActions {
   selectPlanet: (planetId: string) => void
   upgradeBuilding: (planetId: string, buildingType: BuildingType) => void
   buildShip: (shipType: ShipType) => void
+  startResearch: (techId: TechId) => void
   initiateInvasion: (planetId: string) => void
   completeBattle: (planetId: string, survivalRatio: number) => void
   retreatBattle: (planetId: string) => void
@@ -34,6 +45,8 @@ interface GameActions {
 }
 
 type GameStore = GameState & GameActions
+
+const DEFAULT_RESEARCH: GameState['research'] = { researched: [], current: null, progress: 0 }
 
 function applyFleetCasualties(fleet: Fleet, casualtyRate: number): Fleet {
   const result = { ...fleet }
@@ -46,7 +59,8 @@ function applyFleetCasualties(fleet: Fleet, casualtyRate: number): Fleet {
 
 function conquerPlanet(
   planets: GameState['planets'],
-  planetId: string
+  planetId: string,
+  mods: ReturnType<typeof getTechModifiers>
 ): GameState['planets'] {
   return planets.map((p) => {
     if (p.id !== planetId) return p
@@ -62,7 +76,7 @@ function conquerPlanet(
     }
     return {
       ...conquered,
-      defenseRating: calculatePlanetDefense(conquered),
+      defenseRating: calculatePlanetDefense(conquered, mods),
     }
   })
 }
@@ -83,7 +97,8 @@ export const useGameStore = create<GameStore>()(
         const info = BUILDING_INFO[buildingType]
         if (currentLevel >= info.maxLevel) return
 
-        const cost = getBuildingCost(buildingType, currentLevel)
+        const mods = getTechModifiers(state.research.researched)
+        const cost = getBuildingCost(buildingType, currentLevel, mods)
         if (!canAfford(state.resources, cost)) return
 
         const planets = state.planets.map((p) => {
@@ -95,7 +110,7 @@ export const useGameStore = create<GameStore>()(
               )
             : [...p.buildings, { type: buildingType, level: 1 }]
           const updated = { ...p, buildings }
-          return { ...updated, defenseRating: calculatePlanetDefense(updated) }
+          return { ...updated, defenseRating: calculatePlanetDefense(updated, mods) }
         })
 
         set({
@@ -130,7 +145,7 @@ export const useGameStore = create<GameStore>()(
           return
         }
 
-        const cost = SHIP_INFO[shipType].cost
+        const cost = getShipCost(shipType, getTechModifiers(state.research.researched))
         if (!canAfford(state.resources, cost)) return
 
         set({
@@ -138,6 +153,21 @@ export const useGameStore = create<GameStore>()(
           fleet: { ...state.fleet, [shipType]: state.fleet[shipType] + 1 },
           events: [
             createEvent('success', `${SHIP_INFO[shipType].name} commissioned into the armada.`),
+            ...state.events.slice(0, 49),
+          ],
+        })
+      },
+
+      startResearch: (techId) => {
+        const state = get()
+        const tech = TECHS[techId]
+        if (!tech || !canResearch(tech, state.research.researched)) return
+        if (state.research.current === techId) return
+
+        set({
+          research: { ...state.research, current: techId, progress: 0 },
+          events: [
+            createEvent('info', `Noospheric inquiry begun: ${tech.name}.`),
             ...state.events.slice(0, 49),
           ],
         })
@@ -166,13 +196,16 @@ export const useGameStore = create<GameStore>()(
           ? ENEMY_FACTIONS.find((f) => f.id === target.enemyFaction)
           : undefined
 
-        useBattleStore.getState().startBattle(
+        const mods = getTechModifiers(state.research.researched)
+        useBattleStore.getState().startBattle({
           planetId,
-          target.name,
-          faction?.color ?? '#ff6b6b',
-          getFleetPower(state.fleet),
-          target.defenseRating
-        )
+          planetName: target.name,
+          planetType: target.type,
+          enemyColor: faction?.color ?? '#ff6b6b',
+          fleetPower: getFleetPower(state.fleet, mods),
+          defenseRating: target.defenseRating,
+          mods,
+        })
       },
 
       completeBattle: (planetId, survivalRatio) => {
@@ -182,7 +215,11 @@ export const useGameStore = create<GameStore>()(
 
         const casualtyRate = Math.min(0.7, Math.max(0.1, 1 - survivalRatio * 0.85))
         const newFleet = applyFleetCasualties(state.fleet, casualtyRate)
-        let planets = conquerPlanet(state.planets, planetId)
+        const planets = conquerPlanet(
+          state.planets,
+          planetId,
+          getTechModifiers(state.research.researched)
+        )
         let gameWon = state.gameWon
 
         const enemyRemaining = planets.filter((p) => p.owner === 'enemy').length
@@ -247,7 +284,8 @@ export const useGameStore = create<GameStore>()(
         if (state.gameWon || state.gameOver) return
         if (useBattleStore.getState().battle?.active) return
 
-        const production = calculateProduction(state.planets)
+        const mods = getTechModifiers(state.research.researched)
+        const production = calculateProduction(state.planets, mods)
         const consumption = calculateConsumption(state.planets)
 
         const netProduction = {
@@ -268,13 +306,14 @@ export const useGameStore = create<GameStore>()(
           if (p.owner !== 'player') return p
 
           const minPop = getMinimumPopulation(p)
+          const maxPop = getEffectiveMaxPopulation(p, mods)
           const growthMod = getPopulationGrowthModifier(p, netProduction.food >= 0)
           let population = p.population
 
-          if (growthMod > 0 && p.population < p.maxPopulation) {
+          if (growthMod > 0 && p.population < maxPop) {
             const growthChance = growthMod >= 1 ? 1 : growthMod >= 0.5 ? 0.5 : 0.25
             if (Math.random() < growthChance) {
-              population = Math.min(p.maxPopulation, p.population + 1)
+              population = Math.min(maxPop, p.population + 1)
             }
           } else if (netProduction.food < 0 && p.population > minPop) {
             population = Math.max(minPop, p.population - 1)
@@ -283,10 +322,42 @@ export const useGameStore = create<GameStore>()(
           return { ...p, population }
         })
 
+        let research = state.research
+        let events = state.events
+        if (research.current) {
+          const tech = TECHS[research.current as TechId]
+          const rate = calculateResearchRate(getThroneNodeLevels(state.planets), mods)
+          const progress = research.progress + rate
+
+          if (tech && progress >= tech.cost) {
+            const researched = [...research.researched, tech.id]
+            const newMods = getTechModifiers(researched)
+            research = { researched, current: null, progress: 0 }
+            events = [
+              createEvent('success', `Breakthrough: ${tech.name}. ${tech.effect}.`),
+              ...events.slice(0, 49),
+            ]
+            if (newMods.defenseMult !== mods.defenseMult) {
+              for (let i = 0; i < planets.length; i++) {
+                if (planets[i].owner === 'player') {
+                  planets[i] = {
+                    ...planets[i],
+                    defenseRating: calculatePlanetDefense(planets[i], newMods),
+                  }
+                }
+              }
+            }
+          } else {
+            research = { ...research, progress }
+          }
+        }
+
         set({
           tickCount: state.tickCount + 1,
           resources,
           planets,
+          research,
+          events,
         })
       },
 
@@ -304,16 +375,31 @@ export const useGameStore = create<GameStore>()(
         fleet: state.fleet,
         selectedPlanetId: state.selectedPlanetId,
         events: state.events,
+        research: state.research,
         gameWon: state.gameWon,
         gameOver: state.gameOver,
       }),
+      merge: (persisted, current) => {
+        const saved = (persisted ?? {}) as Partial<GameState>
+        return {
+          ...current,
+          ...saved,
+          research: saved.research ?? DEFAULT_RESEARCH,
+        }
+      },
     }
   )
 )
 
+export function useTechModifiers() {
+  const researched = useGameStore((s) => s.research.researched)
+  return getTechModifiers(researched)
+}
+
 export function useProductionRates() {
   const planets = useGameStore((s) => s.planets)
-  const production = calculateProduction(planets)
+  const mods = useTechModifiers()
+  const production = calculateProduction(planets, mods)
   const consumption = calculateConsumption(planets)
   return {
     minerals: production.minerals - consumption.minerals,
@@ -325,7 +411,14 @@ export function useProductionRates() {
 
 export function useFleetPower() {
   const fleet = useGameStore((s) => s.fleet)
-  return getFleetPower(fleet)
+  const mods = useTechModifiers()
+  return getFleetPower(fleet, mods)
+}
+
+export function useResearchRate() {
+  const planets = useGameStore((s) => s.planets)
+  const mods = useTechModifiers()
+  return calculateResearchRate(getThroneNodeLevels(planets), mods)
 }
 
 export function useSelectedPlanet() {

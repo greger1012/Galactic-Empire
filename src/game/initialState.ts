@@ -46,6 +46,11 @@ export function createInitialState(): GameState {
         message: OPENING_CHRONICLE,
       },
     ],
+    research: {
+      researched: [],
+      current: null,
+      progress: 0,
+    },
     gameWon: false,
     gameOver: false,
   }

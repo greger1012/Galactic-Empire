@@ -1,13 +1,15 @@
 import { SHIP_INFO } from '../game/constants'
+import { getShipCost } from '../game/engine'
 import { LORE } from '../game/lore'
 import type { ShipType } from '../game/types'
-import { useFleetPower, useGameStore } from '../store/gameStore'
+import { useFleetPower, useGameStore, useTechModifiers } from '../store/gameStore'
 
 export function FleetPanel() {
   const fleet = useGameStore((s) => s.fleet)
   const resources = useGameStore((s) => s.resources)
   const buildShip = useGameStore((s) => s.buildShip)
   const fleetPower = useFleetPower()
+  const mods = useTechModifiers()
 
   const totalShips = (Object.values(fleet) as number[]).reduce((a, b) => a + b, 0)
 
@@ -37,11 +39,12 @@ export function FleetPanel() {
         <div className="ship-grid">
           {(Object.keys(SHIP_INFO) as ShipType[]).map((type) => {
             const info = SHIP_INFO[type]
+            const cost = getShipCost(type, mods)
             const affordable =
-              resources.minerals >= info.cost.minerals &&
-              resources.energy >= info.cost.energy &&
-              resources.food >= info.cost.food &&
-              resources.credits >= info.cost.credits
+              resources.minerals >= cost.minerals &&
+              resources.energy >= cost.energy &&
+              resources.food >= cost.food &&
+              resources.credits >= cost.credits
 
             return (
               <div key={type} className="ship-card">
@@ -57,8 +60,8 @@ export function FleetPanel() {
                   onClick={() => buildShip(type)}
                 >
                   <span className="cost">
-                    ⛏️{info.cost.minerals} ⚡{info.cost.energy}
-                    {info.cost.credits > 0 && ` ⚜️${info.cost.credits}`}
+                    ⛏️{cost.minerals} ⚡{cost.energy}
+                    {cost.credits > 0 && ` ⚜️${cost.credits}`}
                   </span>
                   Commission
                 </button>

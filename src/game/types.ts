@@ -99,6 +99,12 @@ export interface ProductionRates {
   credits: number
 }
 
+export interface ResearchState {
+  researched: string[]
+  current: string | null
+  progress: number
+}
+
 export interface GameState {
   empireName: string
   tickCount: number
@@ -107,6 +113,7 @@ export interface GameState {
   fleet: Fleet
   selectedPlanetId: string
   events: GameEvent[]
+  research: ResearchState
   gameWon: boolean
   gameOver: boolean
 }

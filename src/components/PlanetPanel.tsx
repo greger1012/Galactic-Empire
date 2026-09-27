@@ -1,10 +1,9 @@
 import { BUILDING_INFO, ENEMY_FACTIONS, PLANET_SPECIALIZATION_LABELS, PLANET_TYPE_INFO } from '../game/constants'
-import { getBuildingCost, getBuildingLevel } from '../game/engine'
+import { getBuildingCost, getBuildingLevel, getEffectiveMaxPopulation } from '../game/engine'
 import { LORE } from '../game/lore'
 import { getPlanetEpithet } from '../game/names'
 import type { BuildingType } from '../game/types'
-import { useGameStore } from '../store/gameStore'
-import { useProductionRates } from '../store/gameStore'
+import { useGameStore, useProductionRates, useTechModifiers } from '../store/gameStore'
 
 function formatBonus(value: number): string {
   const percent = Math.round(value * 100)
@@ -20,6 +19,7 @@ export function PlanetPanel() {
   const resources = useGameStore((s) => s.resources)
   const upgradeBuilding = useGameStore((s) => s.upgradeBuilding)
   const rates = useProductionRates()
+  const mods = useTechModifiers()
 
   if (!planet) return null
 
@@ -96,7 +96,8 @@ export function PlanetPanel() {
         <div className="stat">
           <span className="stat-label">Population</span>
           <span className="stat-value">
-            {planet.population.toLocaleString()} / {planet.maxPopulation.toLocaleString()}
+            {planet.population.toLocaleString()} /{' '}
+            {getEffectiveMaxPopulation(planet, mods).toLocaleString()}
           </span>
         </div>
         <div className="stat">
@@ -131,7 +132,7 @@ export function PlanetPanel() {
             {(Object.keys(BUILDING_INFO) as BuildingType[]).map((type) => {
               const info = BUILDING_INFO[type]
               const level = getBuildingLevel(planet, type)
-              const cost = getBuildingCost(type, level)
+              const cost = getBuildingCost(type, level, mods)
               const maxed = level >= info.maxLevel
               const affordable =
                 resources.minerals >= cost.minerals &&
