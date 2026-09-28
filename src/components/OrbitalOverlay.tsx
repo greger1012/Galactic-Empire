@@ -6,6 +6,7 @@ import {
 } from '../battle/orbitalEngagement'
 import { LORE } from '../game/lore'
 import type { ShipType } from '../game/types'
+import { OrbitalTacticalBattle } from './OrbitalTacticalBattle'
 import { useBattleStore } from '../store/battleStore'
 import { useFleetPower, useGameStore, useTechModifiers } from '../store/gameStore'
 
@@ -19,6 +20,7 @@ function OrbitalOverlayActive() {
   const orbital = useBattleStore((s) => s.orbital)!
   const setDoctrine = useBattleStore((s) => s.setOrbitalDoctrine)
   const commit = useBattleStore((s) => s.commitOrbitalAssault)
+  const finishTactical = useBattleStore((s) => s.finishOrbitalTactical)
   const deploy = useBattleStore((s) => s.proceedToGroundAssault)
   const cancel = useBattleStore((s) => s.cancelOrbital)
 
@@ -43,6 +45,12 @@ function OrbitalOverlayActive() {
         </header>
 
         <div className="orbital-body">
+          {orbital.phase === 'tactical' && orbital.tactical && (
+            <OrbitalTacticalBattle tactical={orbital.tactical} onFinished={finishTactical} />
+          )}
+
+          {orbital.phase !== 'tactical' && (
+          <>
           <div className="orbital-bars">
             <div className="orbital-bar-row">
               <span>{LORE.orbital.armadaStrength}</span>
@@ -141,10 +149,12 @@ function OrbitalOverlayActive() {
               </ul>
             </div>
           )}
+          </>
+          )}
         </div>
 
         <footer className="orbital-actions">
-          {orbital.phase === 'doctrine' ? (
+          {orbital.phase === 'doctrine' && (
             <>
               <button type="button" className="btn btn-retreat" onClick={cancel}>
                 {LORE.orbital.abort}
@@ -153,7 +163,8 @@ function OrbitalOverlayActive() {
                 {LORE.orbital.commit}
               </button>
             </>
-          ) : (
+          )}
+          {orbital.phase === 'results' && (
             <button type="button" className="btn btn-attack" onClick={deploy}>
               {LORE.orbital.deployLegions}
             </button>

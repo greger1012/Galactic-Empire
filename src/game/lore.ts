@@ -55,7 +55,7 @@ export const LORE = {
   orbital: {
     title: 'Void Engagement',
     subtitle: 'Armada batteries duel planetary aegis before the legions deploy',
-    commit: 'Commit Orbital Assault',
+    commit: 'Engage in Void Battle',
     deployLegions: 'Deploy Legions',
     abort: 'Break Off Approach',
     orbitalAegis: 'Orbital Aegis',

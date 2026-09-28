@@ -24,7 +24,8 @@ export function Game() {
   const frontierWave = useGameStore((s) => s.frontier.wave)
   const battleActive = useBattleStore((s) => s.battle?.active ?? false)
   const orbitalActive = useBattleStore((s) => s.orbital?.active ?? false)
-  const invasionPaused = battleActive || orbitalActive
+  const orbitalTactical = useBattleStore((s) => s.orbital?.phase === 'tactical')
+  const invasionPaused = battleActive || orbitalActive || orbitalTactical
   const reopenMandateGuide = useGameStore((s) => s.reopenMandateGuide)
   const mandateDismissed = useGameStore((s) => s.mandateGuide.dismissed)
 

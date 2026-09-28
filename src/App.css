@@ -879,6 +879,42 @@
   border-color: rgba(196, 75, 75, 0.5);
 }
 
+.orbital-tactical-hud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  margin-bottom: 0.5rem;
+}
+
+.orbital-tactical-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.orbital-tactical-canvas {
+  width: 100%;
+  max-width: 100%;
+  border: 1px solid var(--border-bright);
+  border-radius: 4px;
+  cursor: crosshair;
+  display: block;
+}
+
+.orbital-tactical-result {
+  text-align: center;
+  margin-top: 0.75rem;
+  font-family: var(--font-display);
+  color: var(--accent-bright);
+}
+
+.orbital-tactical-result.defeat {
+  color: var(--danger);
+}
+
 .orbital-actions {
   display: flex;
   justify-content: flex-end;

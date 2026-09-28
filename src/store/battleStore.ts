@@ -18,9 +18,11 @@ import {
 } from '../battle/battleLogic'
 import {
   getOrbitalFleetLosses,
-  resolveOrbitalEngagement,
   type OrbitalDoctrine,
 } from '../battle/orbitalEngagement'
+import { resolveOrbitalFromTactical } from '../battle/orbitalTactical/resolveFromTactical'
+import { createOrbitalTacticalBattle } from '../battle/orbitalTactical/spawn'
+import type { OrbitalTacticalState } from '../battle/orbitalTactical/types'
 import { createBattle, type BattleSetup } from '../battle/spawnBattle'
 import type { BattleState } from '../battle/types'
 import { getFleetPower, getTotalShips } from '../game/engine'
@@ -29,11 +31,12 @@ import { useGameStore } from './gameStore'
 
 export interface OrbitalPhaseState {
   active: true
-  phase: 'doctrine' | 'results'
+  phase: 'doctrine' | 'tactical' | 'results'
   pendingSetup: BattleSetup
   originalDefenseRating: number
   doctrine: OrbitalDoctrine
-  result: ReturnType<typeof resolveOrbitalEngagement> | null
+  tactical: OrbitalTacticalState | null
+  result: ReturnType<typeof resolveOrbitalFromTactical> | null
 }
 
 interface BattleStore {
@@ -43,6 +46,8 @@ interface BattleStore {
   startOrbital: (setup: BattleSetup, originalDefenseRating: number) => void
   setOrbitalDoctrine: (doctrine: OrbitalDoctrine) => void
   commitOrbitalAssault: () => void
+  finishOrbitalTactical: () => void
+  setOrbitalTactical: (tactical: OrbitalTacticalState) => void
   proceedToGroundAssault: () => void
   cancelOrbital: () => void
   startBattle: (setup: BattleSetup) => void
@@ -76,6 +81,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
         pendingSetup: setup,
         originalDefenseRating,
         doctrine: 'balanced',
+        tactical: null,
         result: null,
       },
       battle: null,
@@ -95,10 +101,41 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
 
     const game = useGameStore.getState()
     const mods = getTechModifiers(game.research.researched)
-    const result = resolveOrbitalEngagement(
-      game.fleet,
+    const setup = orbital.pendingSetup
+    const tactical = createOrbitalTacticalBattle(
+      setup.planetName,
       orbital.originalDefenseRating,
+      game.fleet,
       orbital.doctrine,
+      mods,
+      setup.enemyColor
+    )
+
+    set({
+      orbital: {
+        ...orbital,
+        phase: 'tactical',
+        tactical,
+      },
+    })
+  },
+
+  setOrbitalTactical: (tactical) => {
+    const { orbital } = get()
+    if (!orbital) return
+    set({ orbital: { ...orbital, tactical } })
+  },
+
+  finishOrbitalTactical: () => {
+    const { orbital } = get()
+    if (!orbital?.tactical) return
+
+    const game = useGameStore.getState()
+    const mods = getTechModifiers(game.research.researched)
+    const result = resolveOrbitalFromTactical(
+      orbital.tactical,
+      orbital.originalDefenseRating,
+      game.fleet,
       mods
     )
     const losses = getOrbitalFleetLosses(game.fleet, result.fleetLossRate)
@@ -115,6 +152,7 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
       orbital: {
         ...orbital,
         phase: 'results',
+        tactical: null,
         result,
       },
     })
