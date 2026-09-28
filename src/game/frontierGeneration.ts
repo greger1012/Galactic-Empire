@@ -100,6 +100,40 @@ export function hashPlanetId(id: string): number {
 }
 
 /** Percent positions for the stellar cartograph (center = Iron Sun). */
+const MAP_COORDS_PER_PERCENT = 8
+
+export function getGalaxyMapBounds(planets: Planet[], paddingPercent = 14) {
+  let minX = 50
+  let maxX = 50
+  let minY = 50
+  let maxY = 50
+
+  for (const planet of planets) {
+    const { x, y } = getPlanetMapPosition(planet)
+    minX = Math.min(minX, x)
+    maxX = Math.max(maxX, x)
+    minY = Math.min(minY, y)
+    maxY = Math.max(maxY, y)
+  }
+
+  minX -= paddingPercent
+  maxX += paddingPercent
+  minY -= paddingPercent
+  maxY += paddingPercent
+
+  const widthPercent = maxX - minX
+  const heightPercent = maxY - minY
+
+  return {
+    minX,
+    minY,
+    widthPx: widthPercent * MAP_COORDS_PER_PERCENT,
+    heightPx: heightPercent * MAP_COORDS_PER_PERCENT,
+    toLocalX: (x: number) => (x - minX) * MAP_COORDS_PER_PERCENT,
+    toLocalY: (y: number) => (y - minY) * MAP_COORDS_PER_PERCENT,
+  }
+}
+
 export function getPlanetMapPosition(planet: Planet): { x: number; y: number } {
   const h1 = hashPlanetId(planet.id)
   const h2 = hashPlanetId(`${planet.id}:alt`)

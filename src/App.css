@@ -288,24 +288,51 @@
   font-style: normal;
 }
 
+.galaxy-map-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0 0 0.35rem;
+}
+
 .galaxy-map {
   position: relative;
   width: 100%;
   aspect-ratio: 1;
   max-height: 320px;
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
   background: radial-gradient(circle at center, rgba(78, 205, 196, 0.05) 0%, transparent 70%);
   border-radius: 50%;
   border: 1px dashed var(--border);
+  margin: 0 auto 0.5rem;
+}
+
+.galaxy-map:active {
+  cursor: grabbing;
+}
+
+.galaxy-map-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.galaxy-map-reset {
+  display: block;
   margin: 0 auto 1rem;
+  font-size: 0.75rem;
 }
 
 .galaxy-center {
   position: absolute;
-  top: 50%;
-  left: 50%;
   transform: translate(-50%, -50%);
   font-size: 2rem;
   filter: drop-shadow(0 0 10px rgba(255, 200, 50, 0.6));
+  pointer-events: none;
 }
 
 .planet-node {
