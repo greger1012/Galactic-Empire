@@ -97,16 +97,15 @@ export function GalaxyMap() {
     }, 0)
   }
 
-  const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
-    event.preventDefault()
+  const applyWheelZoom = useCallback((clientX: number, clientY: number, deltaY: number) => {
     const viewport = viewportRef.current
     if (!viewport) return
 
     const rect = viewport.getBoundingClientRect()
-    const cursorX = event.clientX - rect.left
-    const cursorY = event.clientY - rect.top
+    const cursorX = clientX - rect.left
+    const cursorY = clientY - rect.top
+    const zoomFactor = 1 - deltaY * 0.0012
 
-    const zoomFactor = 1 - event.deltaY * 0.0012
     setZoom((prevZoom) => {
       const nextZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, prevZoom * zoomFactor))
       const scale = nextZoom / prevZoom
@@ -118,7 +117,21 @@ export function GalaxyMap() {
 
       return nextZoom
     })
-  }
+  }, [])
+
+  useEffect(() => {
+    const viewport = viewportRef.current
+    if (!viewport) return
+
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault()
+      event.stopPropagation()
+      applyWheelZoom(event.clientX, event.clientY, event.deltaY)
+    }
+
+    viewport.addEventListener('wheel', onWheel, { passive: false })
+    return () => viewport.removeEventListener('wheel', onWheel)
+  }, [applyWheelZoom, planets.length])
 
   const handlePlanetSelect = (planetId: string) => {
     if (dragRef.current.moved) return
@@ -148,7 +161,6 @@ export function GalaxyMap() {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        onWheel={handleWheel}
       >
         <div
           className="galaxy-map-canvas"

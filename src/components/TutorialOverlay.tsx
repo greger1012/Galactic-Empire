@@ -40,7 +40,12 @@ export function TutorialOverlay() {
   if (tutorial.completed || combatOpen) return null
 
   return (
-    <div className="tutorial-overlay" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
+    <div
+      className={`tutorial-overlay${step.highlight ? ' tutorial-overlay--spotlight' : ''}`}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tutorial-title"
+    >
       <div className="tutorial-backdrop" aria-hidden="true" />
       <div className="tutorial-dialog panel">
         <div className="tutorial-dialog-header">
