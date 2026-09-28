@@ -824,6 +824,60 @@
   gap: inherit;
 }
 
+.combat-briefing-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(6, 10, 18, 0.82);
+}
+
+.combat-briefing-card {
+  width: min(440px, 100%);
+  margin: 0;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.combat-briefing-tag {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-cyan);
+  margin-bottom: 0.35rem;
+}
+
+.combat-briefing-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.combat-briefing-intro {
+  margin: 0 0 0.75rem;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.combat-briefing-list {
+  margin: 0 0 1rem;
+  padding-left: 1.15rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.combat-briefing-list li {
+  margin-bottom: 0.4rem;
+}
+
+.combat-briefing-confirm {
+  width: 100%;
+}
+
 /* Battle Overlay */
 .orbital-overlay {
   z-index: 1000;
@@ -834,6 +888,7 @@
 }
 
 .orbital-body {
+  position: relative;
   padding: 1rem 1.25rem 0.5rem;
 }
 

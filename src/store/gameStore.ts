@@ -25,6 +25,7 @@ import { DEFAULT_CHRONICLE_STATE, syncChronicleMandates } from '../game/chronicl
 import { syncFrontierChronicles } from '../game/frontierChronicles'
 import { mergeFrontierState, spawnNextFrontierWave } from '../game/frontierGeneration'
 import { DEFAULT_MANDATE_GUIDE } from '../game/mandateGuide'
+import { type CombatBriefingId, DEFAULT_COMBAT_TUTORIAL } from '../game/combatTutorial'
 import { TUTORIAL_STEPS } from '../game/tutorial'
 import { WIN_CHRONICLE } from '../game/lore'
 import {
@@ -58,6 +59,8 @@ interface GameActions {
   completeTutorial: () => void
   skipTutorial: () => void
   reopenTutorial: () => void
+  dismissCombatBriefing: (id: CombatBriefingId) => void
+  resetCombatBriefings: () => void
   applyOrbitalEngagementResult: (
     losses: Partial<Fleet>,
     result: OrbitalEngagementResult,
@@ -574,6 +577,16 @@ export const useGameStore = create<GameStore>()(
         set({
           tutorial: { completed: false, stepIndex: 0 },
         }),
+
+      dismissCombatBriefing: (id) =>
+        set((s) => ({
+          combatTutorial: { ...s.combatTutorial, [id]: true },
+        })),
+
+      resetCombatBriefings: () =>
+        set({
+          combatTutorial: { ...DEFAULT_COMBAT_TUTORIAL },
+        }),
     }),
     {
       name: 'galactic-empire-save-v2',
@@ -588,6 +601,7 @@ export const useGameStore = create<GameStore>()(
         research: state.research,
         mandateGuide: state.mandateGuide,
         tutorial: state.tutorial,
+        combatTutorial: state.combatTutorial,
         chronicle: state.chronicle,
         victoryKind: state.victoryKind,
         gameWon: state.gameWon,
@@ -622,6 +636,11 @@ export const useGameStore = create<GameStore>()(
           research: saved.research ?? DEFAULT_RESEARCH,
           mandateGuide: saved.mandateGuide ?? DEFAULT_MANDATE,
           tutorial: saved.tutorial ?? { completed: true, stepIndex: 0 },
+          combatTutorial:
+            saved.combatTutorial ??
+            (saved.mandateGuide?.invasionIssued
+              ? { orbitalDoctrine: true, orbitalTactical: true, groundAssault: true }
+              : { ...DEFAULT_COMBAT_TUTORIAL }),
           chronicle: {
             completed: saved.chronicle?.completed ?? [...DEFAULT_CHRONICLE.completed],
             frontierCompleted:

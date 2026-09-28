@@ -1,4 +1,7 @@
 import { useEffect, useRef } from 'react'
+import { CombatBriefingCard } from './CombatBriefingCard'
+import { COMBAT_BRIEFINGS, hasSeenCombatBriefing } from '../game/combatTutorial'
+import { useGameStore } from '../store/gameStore'
 import {
   addVoidSelection,
   boxSelectVoidShips,
@@ -20,10 +23,18 @@ interface Props {
 }
 
 export function OrbitalTacticalBattle({ tactical, onFinished }: Props) {
+  const combatTutorial = useGameStore((s) => s.combatTutorial)
+  const dismissCombatBriefing = useGameStore((s) => s.dismissCombatBriefing)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const finishedRef = useRef(false)
   const dragRef = useRef(false)
   const lastTimeRef = useRef(0)
+  const briefingPauseRef = useRef(false)
+
+  const tacticalBriefing = COMBAT_BRIEFINGS.orbitalTactical
+  const showTacticalBriefing =
+    tactical.status === 'active' &&
+    !hasSeenCombatBriefing(combatTutorial, 'orbitalTactical')
 
   const setTactical = (next: OrbitalTacticalState) => {
     useBattleStore.getState().setOrbitalTactical(next)
@@ -36,6 +47,14 @@ export function OrbitalTacticalBattle({ tactical, onFinished }: Props) {
     const timer = setTimeout(onFinished, 1200)
     return () => clearTimeout(timer)
   }, [tactical.status, onFinished])
+
+  useEffect(() => {
+    if (!showTacticalBriefing || briefingPauseRef.current) return
+    briefingPauseRef.current = true
+    if (!tactical.paused) {
+      setTactical({ ...tactical, paused: true })
+    }
+  }, [showTacticalBriefing, tactical])
 
   useEffect(() => {
     let frameId: number
@@ -115,8 +134,25 @@ export function OrbitalTacticalBattle({ tactical, onFinished }: Props) {
   const playersAlive = tactical.ships.filter((s) => s.team === 'player' && s.health > 0).length
   const enemiesAlive = tactical.ships.filter((s) => s.team === 'enemy' && s.health > 0).length
 
+  const confirmTacticalBriefing = () => {
+    dismissCombatBriefing('orbitalTactical')
+    const current = useBattleStore.getState().orbital?.tactical
+    if (current?.paused) {
+      setTactical({ ...current, paused: false })
+    }
+  }
+
   return (
     <div className="orbital-tactical">
+      {showTacticalBriefing && (
+        <CombatBriefingCard
+          title={tacticalBriefing.title}
+          intro={tacticalBriefing.intro}
+          bullets={tacticalBriefing.bullets}
+          confirmLabel={tacticalBriefing.confirmLabel}
+          onConfirm={confirmTacticalBriefing}
+        />
+      )}
       <div className="orbital-tactical-hud">
         <span>Armada wings: {playersAlive}</span>
         <span style={{ color: tactical.enemyColor }}>Hostile interceptors: {enemiesAlive}</span>

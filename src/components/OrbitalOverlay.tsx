@@ -4,6 +4,8 @@ import {
   getArmadaStrengthDisplay,
   getOrbitalShipRoles,
 } from '../battle/orbitalEngagement'
+import { CombatBriefingCard } from './CombatBriefingCard'
+import { COMBAT_BRIEFINGS, hasSeenCombatBriefing } from '../game/combatTutorial'
 import { LORE } from '../game/lore'
 import type { ShipType } from '../game/types'
 import { OrbitalTacticalBattle } from './OrbitalTacticalBattle'
@@ -25,8 +27,13 @@ function OrbitalOverlayActive() {
   const cancel = useBattleStore((s) => s.cancelOrbital)
 
   const fleet = useGameStore((s) => s.fleet)
+  const combatTutorial = useGameStore((s) => s.combatTutorial)
+  const dismissCombatBriefing = useGameStore((s) => s.dismissCombatBriefing)
   const mods = useTechModifiers()
   const fleetPower = useFleetPower()
+  const doctrineBriefing = COMBAT_BRIEFINGS.orbitalDoctrine
+  const showDoctrineBriefing =
+    orbital.phase === 'doctrine' && !hasSeenCombatBriefing(combatTutorial, 'orbitalDoctrine')
 
   const setup = orbital.pendingSetup
   const roles = getOrbitalShipRoles(fleet, mods)
@@ -45,6 +52,16 @@ function OrbitalOverlayActive() {
         </header>
 
         <div className="orbital-body">
+          {showDoctrineBriefing && (
+            <CombatBriefingCard
+              title={doctrineBriefing.title}
+              intro={doctrineBriefing.intro}
+              bullets={doctrineBriefing.bullets}
+              confirmLabel={doctrineBriefing.confirmLabel}
+              onConfirm={() => dismissCombatBriefing('orbitalDoctrine')}
+            />
+          )}
+
           {orbital.phase === 'tactical' && orbital.tactical && (
             <OrbitalTacticalBattle tactical={orbital.tactical} onFinished={finishTactical} />
           )}

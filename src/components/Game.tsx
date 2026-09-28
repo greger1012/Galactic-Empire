@@ -31,6 +31,7 @@ export function Game() {
   const mandateDismissed = useGameStore((s) => s.mandateGuide.dismissed)
   const tutorialCompleted = useGameStore((s) => s.tutorial.completed)
   const reopenTutorial = useGameStore((s) => s.reopenTutorial)
+  const resetCombatBriefings = useGameStore((s) => s.resetCombatBriefings)
 
   useEffect(() => {
     if (invasionPaused || !tutorialCompleted) return
@@ -101,6 +102,11 @@ export function Game() {
               </button>
             </>
           )}
+          {' '}
+          ·{' '}
+          <button type="button" className="footer-link" onClick={resetCombatBriefings}>
+            Replay combat primers
+          </button>
         </p>
       </footer>
 

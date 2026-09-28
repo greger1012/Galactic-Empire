@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { BattleState } from '../battle/types'
 import { BattleUnitTooltip } from './BattleUnitTooltip'
+import { CombatBriefingCard } from './CombatBriefingCard'
+import { COMBAT_BRIEFINGS, hasSeenCombatBriefing } from '../game/combatTutorial'
 import { LORE } from '../game/lore'
 import { getSurvivalRatio } from '../battle/battleLogic'
 import { BIOMES } from '../battle/biomes'
@@ -28,8 +30,11 @@ function BattleOverlayActive() {
   const activateLanceVolley = useBattleStore((s) => s.activateLanceVolley)
   const activateVitaeStim = useBattleStore((s) => s.activateVitaeStim)
   const retreatBattle = useGameStore((s) => s.retreatBattle)
+  const combatTutorial = useGameStore((s) => s.combatTutorial)
+  const dismissCombatBriefing = useGameStore((s) => s.dismissCombatBriefing)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const groundBriefingPauseRef = useRef(false)
   const wrapRef = useRef<HTMLDivElement>(null)
   const lastTimeRef = useRef(0)
   const completedRef = useRef(false)
@@ -144,6 +149,23 @@ function BattleOverlayActive() {
   const lanceReady = cd.lanceVolley <= 0
   const vitaeReady = selectedCount > 0 && cd.vitaeStim <= 0
 
+  const groundBriefing = COMBAT_BRIEFINGS.groundAssault
+  const showGroundBriefing =
+    battle.status === 'active' &&
+    !hasSeenCombatBriefing(combatTutorial, 'groundAssault')
+
+  useEffect(() => {
+    if (!showGroundBriefing || groundBriefingPauseRef.current) return
+    groundBriefingPauseRef.current = true
+    if (!battle.paused) togglePause()
+  }, [showGroundBriefing, battle.paused, togglePause])
+
+  const confirmGroundBriefing = () => {
+    dismissCombatBriefing('groundAssault')
+    const current = useBattleStore.getState().battle
+    if (current?.paused) togglePause()
+  }
+
   const grenadeReady = battle.units.some(
     (u) =>
       battle.selectedUnitIds.includes(u.id) &&
@@ -243,6 +265,15 @@ function BattleOverlayActive() {
         </header>
 
         <div className="battle-canvas-wrap" ref={wrapRef}>
+          {showGroundBriefing && (
+            <CombatBriefingCard
+              title={groundBriefing.title}
+              intro={groundBriefing.intro}
+              bullets={groundBriefing.bullets}
+              confirmLabel={groundBriefing.confirmLabel}
+              onConfirm={confirmGroundBriefing}
+            />
+          )}
           <canvas
             ref={canvasRef}
             width={battle.width}
