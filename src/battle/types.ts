@@ -1,0 +1,125 @@
+import type { PlanetType } from '../game/types'
+
+export type BattleTeam = 'player' | 'enemy'
+
+export type UnitAnimState = 'idle' | 'moving' | 'shooting' | 'dying' | 'dead'
+
+export type CoverLevel = 'none' | 'half' | 'full'
+
+export type HostileArchetype = 'line' | 'heavy' | 'skirmisher' | 'bulwark'
+
+export type UnitArchetype =
+  | 'legionLine'
+  | 'legionVeteran'
+  | 'hostileLine'
+  | 'hostileHeavy'
+  | 'hostileSkirmisher'
+  | 'hostileBulwark'
+
+export interface BattleUnit {
+  id: string
+  team: BattleTeam
+  archetype: UnitArchetype
+  factionId?: string
+  label: string
+  x: number
+  y: number
+  moveTargetX: number | null
+  moveTargetY: number | null
+  health: number
+  maxHealth: number
+  damage: number
+  range: number
+  moveSpeed: number
+  fireCooldown: number
+  fireInterval: number
+  state: UnitAnimState
+  stateTimer: number
+  facing: number
+  animFrame: number
+  shootTargetId: string | null
+  squadIndex: number
+  holdPosition: boolean
+  suppressedTimer: number
+  grenadeCooldown: number
+  coverLevel: CoverLevel
+  pendingGrenade: { x: number; y: number } | null
+  /** Player squad ability: heightened suppressive fire. */
+  suppressiveFireTimer: number
+}
+
+export interface BattleTracer {
+  id: string
+  fromX: number
+  fromY: number
+  toX: number
+  toY: number
+  team: BattleTeam
+  life: number
+  blocked: boolean
+}
+
+export interface BattleExplosion {
+  id: string
+  x: number
+  y: number
+  radius: number
+  life: number
+  maxLife: number
+  team: BattleTeam
+}
+
+export interface BattleCover {
+  x: number
+  y: number
+  width: number
+  height: number
+  level: CoverLevel
+}
+
+export type BattleStatus = 'active' | 'victory' | 'defeat'
+
+export type ActiveAbility = 'none' | 'grenade' | 'lanceVolley'
+
+export interface SquadAbilityCooldowns {
+  suppressiveFire: number
+  lanceVolley: number
+  vitaeStim: number
+}
+
+export interface DragSelect {
+  startX: number
+  startY: number
+  endX: number
+  endY: number
+}
+
+export interface BattleState {
+  active: boolean
+  planetId: string
+  planetName: string
+  planetType: PlanetType
+  enemyFactionId?: string
+  hostileRosterName: string
+  enemyColor: string
+  /** Multiplier on suppression duration applied to player legionnaires (tech-driven). */
+  playerSuppressionMult: number
+  status: BattleStatus
+  paused: boolean
+  units: BattleUnit[]
+  tracers: BattleTracer[]
+  explosions: BattleExplosion[]
+  covers: BattleCover[]
+  selectedUnitIds: string[]
+  hoveredUnitId: string | null
+  dragSelect: DragSelect | null
+  activeAbility: ActiveAbility
+  squadCooldowns: SquadAbilityCooldowns
+  initialPlayerCount: number
+  elapsed: number
+  width: number
+  height: number
+  /** Summary line from the preceding orbital phase. */
+  orbitalChronicle?: string
+  isFrontierBoss?: boolean
+}
