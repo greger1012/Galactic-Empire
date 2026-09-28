@@ -16,7 +16,7 @@ export function ResourceBar() {
   const resetGame = useGameStore((s) => s.resetGame)
 
   return (
-    <header className="resource-bar">
+    <header className="resource-bar" data-tutorial-id="resource-bar">
       <div className="empire-info">
         <span className="empire-mandate">{LORE.empireTitle}</span>
         <h1 className="empire-name">{empireName}</h1>

@@ -36,7 +36,7 @@ export function PlanetPanel() {
   const epithet = getPlanetEpithet(planet.id)
 
   return (
-    <section className="panel planet-panel">
+    <section className="panel planet-panel" data-tutorial-id="planet-panel">
       <div className="planet-header">
         <span className="planet-icon">{typeInfo.icon}</span>
         <div>

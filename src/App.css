@@ -749,6 +749,81 @@
   50% { opacity: 0.85; }
 }
 
+/* Warden tutorial */
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  pointer-events: none;
+}
+
+.tutorial-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 10, 18, 0.72);
+  pointer-events: auto;
+}
+
+.tutorial-dialog {
+  position: absolute;
+  left: 50%;
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(520px, calc(100vw - 2rem));
+  pointer-events: auto;
+  margin: 0;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.55);
+}
+
+.tutorial-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.tutorial-step-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--accent-cyan);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tutorial-dialog h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+}
+
+.tutorial-body {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.tutorial-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+[data-tutorial-id].tutorial-spotlight {
+  position: relative;
+  z-index: 901;
+  box-shadow:
+    0 0 0 2px var(--accent-cyan),
+    0 0 28px rgba(78, 205, 196, 0.35);
+  border-radius: var(--radius, 8px);
+}
+
+.fleet-research-stack {
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
+}
+
 /* Battle Overlay */
 .orbital-overlay {
   z-index: 1000;

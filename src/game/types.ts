@@ -121,6 +121,11 @@ export interface MandateGuideState {
   invasionIssued: boolean
 }
 
+export interface TutorialState {
+  completed: boolean
+  stepIndex: number
+}
+
 export type VictoryKind = 'conquest' | 'mastery'
 
 export type ChronicleMandateId =
@@ -152,6 +157,7 @@ export interface GameState {
   events: GameEvent[]
   research: ResearchState
   mandateGuide: MandateGuideState
+  tutorial: TutorialState
   chronicle: ChronicleState
   victoryKind: VictoryKind | null
   gameWon: boolean

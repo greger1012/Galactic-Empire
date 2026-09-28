@@ -129,7 +129,7 @@ export function GalaxyMap() {
   const centerY = mapBounds.toLocalY(50)
 
   return (
-    <section className="panel galaxy-panel">
+    <section className="panel galaxy-panel" data-tutorial-id="galaxy-panel">
       <h2>{LORE.galaxyMapTitle}</h2>
       <div className="galaxy-stats">
         <span className="player-count">Throne Worlds: {playerPlanets.length}</span>

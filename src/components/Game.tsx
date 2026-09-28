@@ -14,6 +14,7 @@ import { FactionPulseIndicator } from './FactionPulseIndicator'
 import { ResourceBar } from './ResourceBar'
 import { BattleOverlay } from './BattleOverlay'
 import { OrbitalOverlay } from './OrbitalOverlay'
+import { TutorialOverlay } from './TutorialOverlay'
 
 export function Game() {
   const tickCount = useGameStore((s) => s.tickCount)
@@ -28,14 +29,16 @@ export function Game() {
   const invasionPaused = battleActive || orbitalActive || orbitalTactical
   const reopenMandateGuide = useGameStore((s) => s.reopenMandateGuide)
   const mandateDismissed = useGameStore((s) => s.mandateGuide.dismissed)
+  const tutorialCompleted = useGameStore((s) => s.tutorial.completed)
+  const reopenTutorial = useGameStore((s) => s.reopenTutorial)
 
   useEffect(() => {
-    if (invasionPaused) return
+    if (invasionPaused || !tutorialCompleted) return
     const interval = setInterval(() => {
       useGameStore.getState().advanceTick()
     }, TICK_INTERVAL_MS)
     return () => clearInterval(interval)
-  }, [invasionPaused])
+  }, [invasionPaused, tutorialCompleted])
 
   return (
     <div className="game">
@@ -68,8 +71,10 @@ export function Game() {
         </div>
         <div className="right-column">
           <PlanetPanel />
-          <FleetPanel />
-          <ResearchPanel />
+          <div data-tutorial-id="fleet-research" className="fleet-research-stack">
+            <FleetPanel />
+            <ResearchPanel />
+          </div>
         </div>
       </main>
 
@@ -87,9 +92,19 @@ export function Game() {
               </button>
             </>
           )}
+          {tutorialCompleted && (
+            <>
+              {' '}
+              ·{' '}
+              <button type="button" className="footer-link" onClick={reopenTutorial}>
+                Replay warden tutorial
+              </button>
+            </>
+          )}
         </p>
       </footer>
 
+      <TutorialOverlay />
       <OrbitalOverlay />
       <BattleOverlay />
     </div>

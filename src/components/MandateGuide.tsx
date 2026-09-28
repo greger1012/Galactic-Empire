@@ -34,7 +34,7 @@ export function MandateGuide() {
   const doneCount = steps.filter((s) => s.done).length
 
   return (
-    <section className="panel mandate-guide-panel">
+    <section className="panel mandate-guide-panel" data-tutorial-id="mandate-guide">
       <div className="mandate-guide-header">
         <h2>First Mandate Briefing</h2>
         {complete ? (

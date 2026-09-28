@@ -25,6 +25,7 @@ import { DEFAULT_CHRONICLE_STATE, syncChronicleMandates } from '../game/chronicl
 import { syncFrontierChronicles } from '../game/frontierChronicles'
 import { mergeFrontierState, spawnNextFrontierWave } from '../game/frontierGeneration'
 import { DEFAULT_MANDATE_GUIDE } from '../game/mandateGuide'
+import { TUTORIAL_STEPS } from '../game/tutorial'
 import { WIN_CHRONICLE } from '../game/lore'
 import {
   TECHS,
@@ -52,6 +53,11 @@ interface GameActions {
   dismissMandateGuide: () => void
   reopenMandateGuide: () => void
   dismissVictoryBanner: () => void
+  advanceTutorial: () => void
+  retreatTutorial: () => void
+  completeTutorial: () => void
+  skipTutorial: () => void
+  reopenTutorial: () => void
   applyOrbitalEngagementResult: (
     losses: Partial<Fleet>,
     result: OrbitalEngagementResult,
@@ -533,6 +539,41 @@ export const useGameStore = create<GameStore>()(
         set((s) => ({ mandateGuide: { ...s.mandateGuide, dismissed: false } })),
 
       dismissVictoryBanner: () => set({ victoryBannerDismissed: true }),
+
+      advanceTutorial: () =>
+        set((s) => ({
+          tutorial: {
+            ...s.tutorial,
+            stepIndex: Math.min(s.tutorial.stepIndex + 1, TUTORIAL_STEPS.length - 1),
+          },
+        })),
+
+      retreatTutorial: () =>
+        set((s) => ({
+          tutorial: {
+            ...s.tutorial,
+            stepIndex: Math.max(0, s.tutorial.stepIndex - 1),
+          },
+        })),
+
+      completeTutorial: () =>
+        set((s) => ({
+          tutorial: {
+            ...s.tutorial,
+            completed: true,
+            stepIndex: TUTORIAL_STEPS.length - 1,
+          },
+        })),
+
+      skipTutorial: () =>
+        set((s) => ({
+          tutorial: { ...s.tutorial, completed: true },
+        })),
+
+      reopenTutorial: () =>
+        set({
+          tutorial: { completed: false, stepIndex: 0 },
+        }),
     }),
     {
       name: 'galactic-empire-save-v2',
@@ -546,6 +587,7 @@ export const useGameStore = create<GameStore>()(
         events: state.events,
         research: state.research,
         mandateGuide: state.mandateGuide,
+        tutorial: state.tutorial,
         chronicle: state.chronicle,
         victoryKind: state.victoryKind,
         gameWon: state.gameWon,
@@ -554,7 +596,8 @@ export const useGameStore = create<GameStore>()(
         victoryBannerDismissed: state.victoryBannerDismissed,
       }),
       merge: (persisted, current) => {
-        const saved = (persisted ?? {}) as Partial<GameState>
+        if (persisted == null) return current
+        const saved = persisted as Partial<GameState>
         const planets = saved.planets ?? current.planets
         const frontier = mergeFrontierState(saved.frontier)
         let mergedPlanets = planets
@@ -578,6 +621,7 @@ export const useGameStore = create<GameStore>()(
             : (saved.events ?? current.events),
           research: saved.research ?? DEFAULT_RESEARCH,
           mandateGuide: saved.mandateGuide ?? DEFAULT_MANDATE,
+          tutorial: saved.tutorial ?? { completed: true, stepIndex: 0 },
           chronicle: {
             completed: saved.chronicle?.completed ?? [...DEFAULT_CHRONICLE.completed],
             frontierCompleted:
