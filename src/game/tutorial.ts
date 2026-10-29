@@ -54,7 +54,8 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     title: 'Stellar Cartograph',
     highlight: 'galaxy-panel',
     body:
-      'The cartograph shows contested worlds around the Iron Sun. Drag to pan and scroll to zoom. Select a world, then issue a Mandate of Conquest when your armada is ready.',
+      'The Stellar Cartograph spans twelve star systems. Use Galactic chart and Star system views — drag to pan, scroll to zoom. ' +
+      'Open Helios Corridor, select a contested world, then issue a Mandate of Conquest when your armada is ready. Clearing a system charts neighboring stars.',
   },
   {
     id: 'firstMandate',

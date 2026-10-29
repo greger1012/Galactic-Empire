@@ -280,11 +280,160 @@
 }
 
 /* Galaxy Map */
+.galaxy-panel-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.galaxy-panel-header h2 {
+  margin: 0;
+}
+
+.map-view-toggle {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.map-view-toggle .btn.active {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
 .galaxy-stats {
   display: flex;
-  gap: 1.5rem;
-  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 0.75rem;
   font-size: 0.85rem;
+}
+
+.galaxy-map-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0 0 0.35rem;
+}
+
+.galaxy-map {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  max-height: 380px;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  touch-action: none;
+  cursor: grab;
+  background: radial-gradient(circle at center, rgba(78, 205, 196, 0.05) 0%, transparent 70%);
+  border: 1px dashed var(--border);
+  margin: 0 auto 0.5rem;
+}
+
+.galaxy-map.galactic-chart {
+  border-radius: 12px;
+  max-height: 420px;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(78, 205, 196, 0.08) 0%, transparent 55%),
+    radial-gradient(circle at 20% 80%, rgba(201, 162, 39, 0.04) 0%, transparent 40%),
+    #06080cee;
+}
+
+.galaxy-map.system-chart {
+  border-radius: 50%;
+}
+
+.galaxy-map:active {
+  cursor: grabbing;
+}
+
+.galaxy-map-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.galaxy-map-reset {
+  display: block;
+  margin: 0 auto 1rem;
+  font-size: 0.75rem;
+}
+
+.hyperlane-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.hyperlane {
+  stroke: rgba(110, 196, 216, 0.22);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 5;
+}
+
+.star-system-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  min-width: 72px;
+  max-width: 110px;
+  z-index: 2;
+}
+
+.star-system-node.charted:hover:not(:disabled) {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 16px var(--cyan-glow);
+}
+
+.star-system-node.founding {
+  border-color: rgba(201, 162, 39, 0.5);
+}
+
+.star-system-node.uncharted {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.star-system-node.selected {
+  box-shadow: 0 0 18px var(--accent-glow);
+  border-color: var(--accent);
+}
+
+.star-system-icon {
+  font-size: 1.35rem;
+}
+
+.star-system-name {
+  font-size: 0.58rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.planet-system-line {
+  font-size: 0.75rem;
+  color: var(--accent-cyan);
+  margin-bottom: 0.25rem;
+}
+
+.galaxy-center {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  filter: drop-shadow(0 0 10px rgba(255, 200, 50, 0.6));
+  pointer-events: none;
 }
 
 .player-count { color: var(--accent); }
@@ -310,54 +459,6 @@
 .faction-lore strong {
   color: var(--text);
   font-style: normal;
-}
-
-.galaxy-map-hint {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  text-align: center;
-  margin: 0 0 0.35rem;
-}
-
-.galaxy-map {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1;
-  max-height: 320px;
-  overflow: hidden;
-  overscroll-behavior: contain;
-  touch-action: none;
-  cursor: grab;
-  background: radial-gradient(circle at center, rgba(78, 205, 196, 0.05) 0%, transparent 70%);
-  border-radius: 50%;
-  border: 1px dashed var(--border);
-  margin: 0 auto 0.5rem;
-}
-
-.galaxy-map:active {
-  cursor: grabbing;
-}
-
-.galaxy-map-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform-origin: 0 0;
-  will-change: transform;
-}
-
-.galaxy-map-reset {
-  display: block;
-  margin: 0 auto 1rem;
-  font-size: 0.75rem;
-}
-
-.galaxy-center {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  font-size: 2rem;
-  filter: drop-shadow(0 0 10px rgba(255, 200, 50, 0.6));
-  pointer-events: none;
 }
 
 .planet-node {

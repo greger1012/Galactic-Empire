@@ -36,11 +36,21 @@ import {
   type TechId,
 } from '../game/research'
 import type { OrbitalEngagementResult } from '../battle/orbitalEngagement'
-import type { BuildingType, Fleet, GameState, ShipType } from '../game/types'
+import {
+  FOUNDING_SYSTEM_ID,
+  chartAdjacentStarSystems,
+  countEnemiesInSystem,
+  getStarSystem,
+  migratePlanetsWithSystemId,
+  migrateStarSystemsForSave,
+} from '../game/starSystems'
+import type { BuildingType, Fleet, GameState, ShipType, StellarMapView } from '../game/types'
 import { useBattleStore } from './battleStore'
 
 interface GameActions {
   selectPlanet: (planetId: string) => void
+  selectStarSystem: (systemId: string) => void
+  setStellarMapView: (view: StellarMapView) => void
   upgradeBuilding: (planetId: string, buildingType: BuildingType) => void
   buildShip: (shipType: ShipType) => void
   startResearch: (techId: TechId) => void
@@ -131,7 +141,34 @@ export const useGameStore = create<GameStore>()(
     (set, get) => ({
       ...createInitialState(),
 
-      selectPlanet: (planetId) => set({ selectedPlanetId: planetId }),
+      selectPlanet: (planetId) => {
+        const planet = get().planets.find((p) => p.id === planetId)
+        set({
+          selectedPlanetId: planetId,
+          ...(planet?.systemId
+            ? { selectedSystemId: planet.systemId, stellarMapView: 'system' as const }
+            : {}),
+        })
+      },
+
+      selectStarSystem: (systemId) => {
+        const system = getStarSystem(get(), systemId)
+        if (!system?.charted) return
+        const inSystem = get().planets.filter(
+          (p) => (p.systemId ?? FOUNDING_SYSTEM_ID) === systemId
+        )
+        const preferred =
+          inSystem.find((p) => p.id === get().selectedPlanetId) ??
+          inSystem.find((p) => p.owner === 'player') ??
+          inSystem[0]
+        set({
+          selectedSystemId: systemId,
+          stellarMapView: 'system',
+          ...(preferred ? { selectedPlanetId: preferred.id } : {}),
+        })
+      },
+
+      setStellarMapView: (view) => set({ stellarMapView: view }),
 
       upgradeBuilding: (planetId, buildingType) => {
         const state = get()
@@ -333,23 +370,43 @@ export const useGameStore = create<GameStore>()(
         )
         let gameWon = state.gameWon
         let victoryKind = state.victoryKind
+        let frontier = state.frontier
+        let starSystems = state.starSystems
+        let spawnEvents: typeof state.events = []
 
-        let enemyRemaining = planets.filter((p) => p.owner === 'enemy').length
-        const firstSectorConquest = enemyRemaining === 0 && !state.gameWon
-        if (enemyRemaining === 0 && victoryKind !== 'mastery') {
+        const systemId = target.systemId ?? FOUNDING_SYSTEM_ID
+        const enemiesInSystem = countEnemiesInSystem(planets, systemId)
+        const foundingEnemies = countEnemiesInSystem(planets, FOUNDING_SYSTEM_ID)
+
+        const firstSectorConquest = foundingEnemies === 0 && !state.gameWon
+        if (foundingEnemies === 0 && victoryKind !== 'mastery') {
           gameWon = true
           if (!victoryKind) victoryKind = 'conquest'
         }
 
-        let frontier = state.frontier
-        let spawnEvents: typeof state.events = []
+        if (enemiesInSystem === 0) {
+          const system = getStarSystem(state, systemId)
+          if (system) {
+            const systemFrontier = {
+              wave: system.frontierWave,
+              sectorSeed: system.sectorSeed,
+            }
+            const spawned = spawnNextFrontierWave(planets, systemFrontier, systemId)
+            planets = spawned.planets
+            frontier = {
+              ...frontier,
+              wave: Math.max(frontier.wave, spawned.frontier.wave),
+            }
+            starSystems = starSystems.map((s) =>
+              s.id === systemId ? { ...s, frontierWave: spawned.frontier.wave } : s
+            )
+            spawnEvents = spawned.events
 
-        if (enemyRemaining === 0) {
-          const spawned = spawnNextFrontierWave(planets, frontier)
-          planets = spawned.planets
-          frontier = spawned.frontier
-          spawnEvents = spawned.events
-          enemyRemaining = planets.filter((p) => p.owner === 'enemy').length
+            const charted = chartAdjacentStarSystems(systemId, starSystems, planets)
+            starSystems = charted.starSystems
+            planets = charted.planets
+            spawnEvents = [...spawnEvents, ...charted.events]
+          }
         }
 
         const events = [
@@ -380,6 +437,7 @@ export const useGameStore = create<GameStore>()(
             {
               fleet: newFleet,
               planets,
+              starSystems,
               frontier,
               events,
               gameWon,
@@ -607,19 +665,23 @@ export const useGameStore = create<GameStore>()(
         gameWon: state.gameWon,
         gameOver: state.gameOver,
         frontier: state.frontier,
+        starSystems: state.starSystems,
+        selectedSystemId: state.selectedSystemId,
+        stellarMapView: state.stellarMapView,
         victoryBannerDismissed: state.victoryBannerDismissed,
       }),
       merge: (persisted, current) => {
         if (persisted == null) return current
         const saved = persisted as Partial<GameState>
-        const planets = saved.planets ?? current.planets
+        let planets = migratePlanetsWithSystemId(saved.planets ?? current.planets)
+        const starSystems = migrateStarSystemsForSave(saved.starSystems)
         const frontier = mergeFrontierState(saved.frontier)
         let mergedPlanets = planets
         let mergedFrontier = frontier
         let extraEvents: GameState['events'] = []
 
         if (planets.filter((p) => p.owner === 'enemy').length === 0) {
-          const spawned = spawnNextFrontierWave(planets, frontier)
+          const spawned = spawnNextFrontierWave(planets, frontier, FOUNDING_SYSTEM_ID)
           mergedPlanets = spawned.planets
           mergedFrontier = spawned.frontier
           extraEvents = spawned.events
@@ -629,6 +691,9 @@ export const useGameStore = create<GameStore>()(
           ...current,
           ...saved,
           planets: mergedPlanets,
+          starSystems,
+          selectedSystemId: saved.selectedSystemId ?? FOUNDING_SYSTEM_ID,
+          stellarMapView: saved.stellarMapView ?? 'galaxy',
           frontier: mergedFrontier,
           events: extraEvents.length > 0
             ? [...extraEvents, ...(saved.events ?? current.events)].slice(0, 50)

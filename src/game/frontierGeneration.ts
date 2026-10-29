@@ -12,6 +12,7 @@ import {
   getFrontierBossDefenseMult,
 } from './deepVoid'
 import type { FrontierState, GameEvent, Planet, PlanetType } from './types'
+import { FOUNDING_SYSTEM_ID } from './starSystems'
 
 const FRONTIER_PLANET_TYPES: PlanetType[] = [
   'desert',
@@ -99,7 +100,6 @@ export function hashPlanetId(id: string): number {
   return (h >>> 0) / 4294967296
 }
 
-/** Percent positions for the stellar cartograph (center = Iron Sun). */
 const MAP_COORDS_PER_PERCENT = 8
 
 export function getGalaxyMapBounds(planets: Planet[], paddingPercent = 14) {
@@ -121,19 +121,17 @@ export function getGalaxyMapBounds(planets: Planet[], paddingPercent = 14) {
   minY -= paddingPercent
   maxY += paddingPercent
 
-  const widthPercent = maxX - minX
-  const heightPercent = maxY - minY
-
   return {
     minX,
     minY,
-    widthPx: widthPercent * MAP_COORDS_PER_PERCENT,
-    heightPx: heightPercent * MAP_COORDS_PER_PERCENT,
+    widthPx: (maxX - minX) * MAP_COORDS_PER_PERCENT,
+    heightPx: (maxY - minY) * MAP_COORDS_PER_PERCENT,
     toLocalX: (x: number) => (x - minX) * MAP_COORDS_PER_PERCENT,
     toLocalY: (y: number) => (y - minY) * MAP_COORDS_PER_PERCENT,
   }
 }
 
+/** Percent positions for the stellar cartograph (center = local star). */
 export function getPlanetMapPosition(planet: Planet): { x: number; y: number } {
   const h1 = hashPlanetId(planet.id)
   const h2 = hashPlanetId(`${planet.id}:alt`)
@@ -213,7 +211,8 @@ function applyFrontierScaling(planet: Planet, frontierWave: number, isBoss: bool
 function createProceduralTemplate(
   wave: number,
   index: number,
-  rng: SeededRng
+  rng: SeededRng,
+  systemId: string
 ): Omit<Planet, 'buildings' | 'defenseRating'> {
   const faction = rng.pick(ENEMY_FACTIONS)
   const type = rng.pick(FRONTIER_PLANET_TYPES)
@@ -227,9 +226,10 @@ function createProceduralTemplate(
 
   const baseCap = rng.int(3500, 11000)
   const basePop = rng.int(800, 4500)
+  const idPrefix = systemId === FOUNDING_SYSTEM_ID ? '' : `${systemId}-`
 
   return {
-    id: `frontier-${wave + 1}-${index}`,
+    id: `${idPrefix}frontier-${wave + 1}-${index}`,
     name,
     type,
     owner: 'enemy',
@@ -239,21 +239,24 @@ function createProceduralTemplate(
     epithet,
     procedural: true,
     frontierWave: wave + 1,
+    systemId,
   }
 }
 
 function createBossTemplate(
   wave: number,
-  rng: SeededRng
+  rng: SeededRng,
+  systemId: string
 ): Omit<Planet, 'buildings' | 'defenseRating'> {
   const faction = rng.pick(ENEMY_FACTIONS)
   const type = rng.pick(BOSS_FAVORED_TYPES)
   const frontierWave = wave + 1
   const baseCap = rng.int(6000, 14000)
   const basePop = rng.int(3500, 8000)
+  const idPrefix = systemId === FOUNDING_SYSTEM_ID ? '' : `${systemId}-`
 
   return {
-    id: `frontier-${frontierWave}-apex`,
+    id: `${idPrefix}frontier-${frontierWave}-apex`,
     name: `${faction.shortName} Void Regent`,
     type,
     owner: 'enemy',
@@ -264,6 +267,7 @@ function createBossTemplate(
     procedural: true,
     frontierWave,
     isFrontierBoss: true,
+    systemId,
   }
 }
 
@@ -273,10 +277,11 @@ export interface SpawnFrontierResult {
   events: GameEvent[]
 }
 
-/** Append the next procedural void frontier when a sector has no contested worlds left. */
+/** Append the next procedural void frontier when a star system has no contested worlds left. */
 export function spawnNextFrontierWave(
   planets: Planet[],
-  frontier: FrontierState
+  frontier: FrontierState,
+  systemId: string = FOUNDING_SYSTEM_ID
 ): SpawnFrontierResult {
   const nextWave = frontier.wave + 1
   const seed = frontierWaveSeed(frontier.sectorSeed, nextWave)
@@ -285,20 +290,22 @@ export function spawnNextFrontierWave(
   const frontierWave = nextWave
 
   const regulars = Array.from({ length: regularCount }, (_, i) => {
-    const raw = createEnemyPlanet(createProceduralTemplate(nextWave - 1, i, rng))
+    const raw = createEnemyPlanet(createProceduralTemplate(nextWave - 1, i, rng, systemId))
     return applyFrontierScaling(raw, frontierWave, false)
   })
 
-  const bossRaw = createEnemyPlanet(createBossTemplate(nextWave - 1, rng))
+  const bossRaw = createEnemyPlanet(createBossTemplate(nextWave - 1, rng, systemId))
   const boss = applyFrontierScaling(bossRaw, frontierWave, true)
 
   const newEnemies = [...regulars, boss]
   const tierLabel = getDeepVoidTierLabel(frontierWave)
+  const systemLabel =
+    systemId === FOUNDING_SYSTEM_ID ? 'Helios Corridor' : systemId.replace(/-/g, ' ')
 
   const events = [
     createEvent(
       'info',
-      `Cartographers chart Void Frontier ${nextWave} (${tierLabel}): ${regularCount} mandates and a ${boss.name} apex bastion appear beyond the last iron-sun beacon.`
+      `Void Frontier ${nextWave} (${tierLabel}) charts within ${systemLabel}: ${regularCount} mandates and a ${boss.name} apex bastion.`
     ),
   ]
 
