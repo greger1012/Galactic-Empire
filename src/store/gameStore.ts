@@ -25,6 +25,12 @@ import { DEFAULT_CHRONICLE_STATE, syncChronicleMandates } from '../game/chronicl
 import { syncFrontierChronicles } from '../game/frontierChronicles'
 import { mergeFrontierState, spawnNextFrontierWave } from '../game/frontierGeneration'
 import { DEFAULT_MANDATE_GUIDE } from '../game/mandateGuide'
+import { applyConquestReprisal, OCCUPATION_UNREST_CYCLES } from '../game/conquestReprisal'
+import {
+  getEffectiveAegis,
+  getSystemGarrisonBonus,
+  suggestOrbitalDoctrine,
+} from '../game/conquestAssessment'
 import { type CombatBriefingId, DEFAULT_COMBAT_TUTORIAL } from '../game/combatTutorial'
 import { TUTORIAL_STEPS } from '../game/tutorial'
 import { WIN_CHRONICLE } from '../game/lore'
@@ -132,6 +138,7 @@ function conquerPlanet(
     return {
       ...conquered,
       defenseRating: calculatePlanetDefense(conquered, mods),
+      occupationUnrest: OCCUPATION_UNREST_CYCLES,
     }
   })
 }
@@ -283,6 +290,18 @@ export const useGameStore = create<GameStore>()(
           : undefined
 
         const mods = getTechModifiers(state.research.researched)
+        const garrisonBonus = getSystemGarrisonBonus(
+          state.planets,
+          target.systemId ?? FOUNDING_SYSTEM_ID,
+          target.id
+        )
+        const effectiveAegis = getEffectiveAegis(target, state.planets)
+        const { doctrine: suggestedDoctrine } = suggestOrbitalDoctrine(
+          state.fleet,
+          effectiveAegis,
+          mods
+        )
+
         set({
           mandateGuide: { ...state.mandateGuide, invasionIssued: true },
         })
@@ -295,12 +314,14 @@ export const useGameStore = create<GameStore>()(
             enemyFactionId: target.enemyFaction,
             enemyColor: faction?.color ?? '#ff6b6b',
             fleetPower: getFleetPower(state.fleet, mods),
-            defenseRating: target.defenseRating,
+            defenseRating: effectiveAegis,
+            garrisonBonus,
             mods,
             frontierWave: target.frontierWave ?? 0,
             isFrontierBoss: target.isFrontierBoss ?? false,
           },
-          target.defenseRating
+          effectiveAegis,
+          suggestedDoctrine
         )
       },
 
@@ -361,6 +382,7 @@ export const useGameStore = create<GameStore>()(
         if (!target) return
 
         const bossDefeated = target.isFrontierBoss === true
+        const conqueredFaction = target.enemyFaction
         const casualtyRate = Math.min(0.7, Math.max(0.1, 1 - survivalRatio * 0.85))
         const newFleet = applyFleetCasualties(state.fleet, casualtyRate)
         let planets = conquerPlanet(
@@ -373,6 +395,16 @@ export const useGameStore = create<GameStore>()(
         let frontier = state.frontier
         let starSystems = state.starSystems
         let spawnEvents: typeof state.events = []
+
+        if (conqueredFaction) {
+          const reprisal = applyConquestReprisal(
+            planets,
+            { ...target, enemyFaction: conqueredFaction },
+            state.tickCount
+          )
+          planets = reprisal.planets
+          spawnEvents = reprisal.events
+        }
 
         const systemId = target.systemId ?? FOUNDING_SYSTEM_ID
         const enemiesInSystem = countEnemiesInSystem(planets, systemId)
@@ -532,6 +564,11 @@ export const useGameStore = create<GameStore>()(
           const maxPop = getEffectiveMaxPopulation(p, mods)
           const growthMod = getPopulationGrowthModifier(p, netProduction.food >= 0)
           let population = p.population
+          let occupationUnrest = p.occupationUnrest
+
+          if (occupationUnrest != null && occupationUnrest > 0) {
+            occupationUnrest = occupationUnrest - 1
+          }
 
           if (growthMod > 0 && p.population < maxPop) {
             const growthChance = growthMod >= 1 ? 1 : growthMod >= 0.5 ? 0.5 : 0.25
@@ -542,7 +579,13 @@ export const useGameStore = create<GameStore>()(
             population = Math.max(minPop, p.population - 1)
           }
 
-          return { ...p, population }
+          return {
+            ...p,
+            population,
+            ...(occupationUnrest != null && occupationUnrest !== p.occupationUnrest
+              ? { occupationUnrest: Math.max(0, occupationUnrest) }
+              : {}),
+          }
         })
 
         let tickPlanets = planets

@@ -3,6 +3,7 @@ import {
   PLANET_TYPE_INFO,
   SHIP_INFO,
 } from './constants'
+import { occupationProductionMult } from './conquestReprisal'
 import { getTechModifiers, type TechModifiers } from './research'
 import type {
   BuildingType,
@@ -95,6 +96,7 @@ export function calculateProduction(
   for (const planet of planets) {
     if (planet.owner !== 'player') continue
     const typeInfo = PLANET_TYPE_INFO[planet.type]
+    const outputMult = occupationProductionMult(planet)
 
     for (const building of planet.buildings) {
       const info = BUILDING_INFO[building.type]
@@ -106,13 +108,13 @@ export function calculateProduction(
           if (resource === 'energy') amount *= typeInfo.energyBonus
           if (resource === 'food') amount *= typeInfo.foodBonus
           if (resource === 'credits') amount *= typeInfo.creditBonus
-          rates[resource] += amount
+          rates[resource] += amount * outputMult
         }
       }
     }
 
     if (typeInfo.strategicBonus > 0) {
-      rates.credits += typeInfo.strategicBonus / 5
+      rates.credits += (typeInfo.strategicBonus / 5) * outputMult
     }
   }
 

@@ -73,6 +73,13 @@ export function PlanetPanel() {
         </p>
       )}
 
+      {isPlayer && (planet.occupationUnrest ?? 0) > 0 && (
+        <p className="planet-occupation-unrest">
+          Mandate pacification: {planet.occupationUnrest} cycle
+          {planet.occupationUnrest === 1 ? '' : 's'} until full imperial output.
+        </p>
+      )}
+
       <p className="planet-description">{typeInfo.description}</p>
 
       <div className="planet-traits">

@@ -91,6 +91,11 @@ function OrbitalOverlayActive() {
               </div>
               <span className="orbital-bar-value">{orbital.originalDefenseRating}</span>
             </div>
+            {setup.garrisonBonus != null && setup.garrisonBonus > 0 && (
+              <p className="orbital-garrison-note">
+                Includes +{setup.garrisonBonus} aegis from sibling garrisons in this star system.
+              </p>
+            )}
           </div>
 
           <div className="orbital-roles">

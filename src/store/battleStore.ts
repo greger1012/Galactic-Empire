@@ -43,7 +43,7 @@ interface BattleStore {
   battle: BattleState | null
   orbital: OrbitalPhaseState | null
   isDragging: boolean
-  startOrbital: (setup: BattleSetup, originalDefenseRating: number) => void
+  startOrbital: (setup: BattleSetup, originalDefenseRating: number, initialDoctrine?: OrbitalDoctrine) => void
   setOrbitalDoctrine: (doctrine: OrbitalDoctrine) => void
   commitOrbitalAssault: () => void
   finishOrbitalTactical: () => void
@@ -73,14 +73,14 @@ export const useBattleStore = create<BattleStore>((set, get) => ({
   orbital: null,
   isDragging: false,
 
-  startOrbital: (setup, originalDefenseRating) => {
+  startOrbital: (setup, originalDefenseRating, initialDoctrine = 'balanced') => {
     set({
       orbital: {
         active: true,
         phase: 'doctrine',
         pendingSetup: setup,
         originalDefenseRating,
-        doctrine: 'balanced',
+        doctrine: initialDoctrine,
         tactical: null,
         result: null,
       },

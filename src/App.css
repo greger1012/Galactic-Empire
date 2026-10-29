@@ -1648,6 +1648,108 @@
   text-align: center;
 }
 
+.planet-occupation-unrest {
+  font-size: 0.82rem;
+  color: var(--accent-gold);
+  background: rgba(201, 162, 39, 0.08);
+  border-left: 3px solid var(--accent-gold);
+  padding: 0.45rem 0.65rem;
+  margin: 0.5rem 0;
+}
+
+.conquest-dossier {
+  margin: 0.75rem 0;
+  padding: 0.75rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 0.82rem;
+}
+
+.conquest-dossier-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.conquest-threat-label {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.conquest-void-tier {
+  font-size: 0.72rem;
+  opacity: 0.75;
+}
+
+.conquest-threat-summary {
+  margin: 0 0 0.65rem;
+  line-height: 1.45;
+  opacity: 0.92;
+}
+
+.conquest-stats {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+}
+
+.conquest-stats div {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 0.35rem;
+}
+
+.conquest-stats dt {
+  margin: 0;
+  opacity: 0.65;
+  font-size: 0.75rem;
+}
+
+.conquest-stats dd {
+  margin: 0;
+  line-height: 1.35;
+}
+
+.conquest-garrison {
+  color: var(--accent-cyan);
+}
+
+.conquest-muted {
+  opacity: 0.65;
+  font-size: 0.78rem;
+}
+
+.conquest-dossier.threat-favorable {
+  border-color: rgba(120, 200, 120, 0.35);
+}
+
+.conquest-dossier.threat-contested {
+  border-color: rgba(201, 162, 39, 0.35);
+}
+
+.conquest-dossier.threat-punishing {
+  border-color: rgba(255, 160, 80, 0.4);
+}
+
+.conquest-dossier.threat-dire {
+  border-color: rgba(255, 90, 90, 0.45);
+}
+
+.conquest-dossier.threat-apex {
+  border-color: rgba(180, 100, 255, 0.5);
+  background: rgba(80, 40, 120, 0.2);
+}
+
+.orbital-garrison-note {
+  font-size: 0.78rem;
+  color: var(--accent-cyan);
+  margin: 0.35rem 0 0;
+  line-height: 1.4;
+}
+
 .active-system-context {
   display: block;
   margin-top: 0.25rem;
