@@ -11,9 +11,9 @@ A browser-based space empire strategy game set during humanity's **Golden Age of
 5. **Galactic chart** — **12 star systems** on the stellar cartograph (Helios Corridor + outer stars). Start in the founding system; **chart neighboring stars** when a system is fully secured. Each system has its own worlds and void frontier waves.
 6. **Triumph (not game over)** — Annex the founding sector **or** fulfill **three Imperial Chronicle mandates** for a Mandate of Mastery. Either milestone unlocks a dismissible victory banner; the mandate cycle **keeps running**.
 7. **Endless void frontiers** — When every contested world in a **star system** falls, cartographers spawn the next **procedural wave** in that system and may **chart adjacent stars** via hyperlanes.
-7. **Deep void tiers** — Shallow → mid → deep → abyssal difficulty: higher aegis, more legions, and harsher faction pulses the farther you push.
-8. **Void Frontier Chronicles** — Separate long goals (first horizon, apex hunter, deep void mandate, outer dominion) with sovereign mark rewards that do not count toward Mandate of Mastery.
-9. **Survive rivals** — Faction pulses every 15 cycles (reinforcements, raids, embargoes).
+8. **Deep void tiers** — Shallow → mid → deep → abyssal difficulty: higher aegis, more legions, and harsher faction pulses the farther you push.
+9. **Void Frontier Chronicles** — Separate long goals (first horizon, apex hunter, deep void mandate, outer dominion) with sovereign mark rewards that do not count toward Mandate of Mastery.
+10. **Survive rivals** — Faction pulses every 15 cycles (reinforcements, raids, embargoes).
 
 ## Getting Started
 
