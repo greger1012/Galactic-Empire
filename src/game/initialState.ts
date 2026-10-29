@@ -4,6 +4,7 @@ import { DEFAULT_FRONTIER } from './frontierGeneration'
 import { DEFAULT_MANDATE_GUIDE } from './mandateGuide'
 import { LORE, OPENING_CHRONICLE } from './lore'
 import { PLANET_LORE_NAMES } from './names'
+import { FOUNDING_SYSTEM_ID, createInitialStarSystems } from './starSystems'
 import type { GameState } from './types'
 
 export function createInitialState(): GameState {
@@ -12,6 +13,7 @@ export function createInitialState(): GameState {
     name: PLANET_LORE_NAMES['terra-prime'].name,
     type: 'terran' as const,
     owner: 'player' as const,
+    systemId: FOUNDING_SYSTEM_ID,
     population: 1000,
     maxPopulation: getPlanetMaxPopulation('terran', 5000),
     buildings: [
@@ -22,7 +24,9 @@ export function createInitialState(): GameState {
     defenseRating: 15,
   }
 
-  const enemyPlanets = ENEMY_PLANETS.map(createEnemyPlanet)
+  const enemyPlanets = ENEMY_PLANETS.map((template) =>
+    createEnemyPlanet({ ...template, systemId: FOUNDING_SYSTEM_ID })
+  )
 
   return {
     empireName: LORE.empireDefaultName,
@@ -64,6 +68,9 @@ export function createInitialState(): GameState {
     gameWon: false,
     gameOver: false,
     frontier: { ...DEFAULT_FRONTIER },
+    starSystems: createInitialStarSystems(),
+    selectedSystemId: FOUNDING_SYSTEM_ID,
+    stellarMapView: 'galaxy',
     victoryBannerDismissed: false,
   }
 }

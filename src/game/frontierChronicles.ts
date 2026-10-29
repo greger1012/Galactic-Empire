@@ -25,11 +25,11 @@ export const FRONTIER_CHRONICLES: FrontierChronicleDef[] = [
   {
     id: 'firstHorizon',
     title: 'First Horizon Charted',
-    description: 'Push beyond the founding sector and chart Void Frontier 1.',
+    description: 'Chart a star system beyond Helios Corridor.',
     icon: '🧭',
     rewardMarks: 40,
     getProgress: (s) => ({
-      current: Math.min(s.frontier.wave, 1),
+      current: Math.min(s.starSystems.filter((sys) => sys.charted).length - 1, 1),
       target: 1,
     }),
   },

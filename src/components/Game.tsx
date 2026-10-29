@@ -77,7 +77,7 @@ export function Game() {
         <p>
           {LORE.cycleLabel} {tickCount}
           {frontierWave > 0 ? ` · Void Frontier ${frontierWave}` : ''} · Rival mandates stir every
-          15 cycles · Clear each sector to chart the next procedural void
+          15 cycles · Clear each star system to chart hyperlanes and void frontiers
           {mandateDismissed && (
             <>
               {' '}

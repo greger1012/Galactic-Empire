@@ -66,6 +66,8 @@ export interface Planet {
   maxPopulation: number
   buildings: Building[]
   defenseRating: number
+  /** Star system this world orbits (founding = Helios Corridor). */
+  systemId?: string
   /** Procedural frontier worlds carry display epithets in save data. */
   epithet?: string
   procedural?: boolean
@@ -73,6 +75,20 @@ export interface Planet {
   /** One apex bastion per void frontier wave — extra aegis and legions. */
   isFrontierBoss?: boolean
 }
+
+export interface StarSystem {
+  id: string
+  name: string
+  starLabel: string
+  galacticX: number
+  galacticY: number
+  sectorSeed: number
+  frontierWave: number
+  charted: boolean
+  isFounding: boolean
+}
+
+export type StellarMapView = 'galaxy' | 'system'
 
 export interface FrontierState {
   wave: number
@@ -157,5 +173,8 @@ export interface GameState {
   gameWon: boolean
   gameOver: boolean
   frontier: FrontierState
+  starSystems: StarSystem[]
+  selectedSystemId: string
+  stellarMapView: StellarMapView
   victoryBannerDismissed: boolean
 }

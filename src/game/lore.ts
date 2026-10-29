@@ -14,6 +14,8 @@ export const LORE = {
   cycleLabel: 'Mandate Cycle',
   chronicleTitle: 'Noospheric Ledger',
   galaxyMapTitle: 'Stellar Cartograph',
+  galacticChartHint:
+    'Twelve star systems span the mapped arm. Secure Helios Corridor to chart neighboring stars.',
   fleetTitle: 'Void Armada Command',
   infrastructureTitle: 'Planetary Infrastructure',
 
