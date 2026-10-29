@@ -3,6 +3,7 @@ import { getBuildingLevel, getThroneNodeLevels, getTotalShips } from './engine'
 import { LORE } from './lore'
 import { BUILDING_LORE } from './names'
 import { calculateResearchRate, getTechModifiers } from './research'
+import { getGalacticMandateFocus, isGalacticMandateComplete } from './galacticMandate'
 import type { GameState, MandateGuideState } from './types'
 
 export type MandateStepId =
@@ -25,6 +26,7 @@ export type MandateFocus =
   | 'fleet'
   | 'invasion'
   | 'research'
+  | 'galacticChart'
   | null
 
 const INITIAL_SCOUT_COUNT = 2
@@ -65,7 +67,8 @@ export function getMandateSteps(state: GameState): MandateStep[] {
     {
       id: 'firstAssault',
       title: 'Issue a Mandate of Conquest',
-      hint: 'Select a contested world, fight the orbital aegis duel, then deploy legions to the surface.',
+      hint:
+        'Open Stellar Cartograph → Star system (Helios Corridor). Select a contested world, win the orbital duel, then deploy legions. Clearing the founding system charts hyperlanes.',
       done: state.mandateGuide.invasionIssued,
     },
     {
@@ -82,24 +85,33 @@ export function isMandateComplete(state: GameState): boolean {
 }
 
 export function getMandateFocus(state: GameState): MandateFocus {
-  if (state.mandateGuide.dismissed || isMandateComplete(state)) return null
-  const steps = getMandateSteps(state)
-  const next = steps.find((s) => !s.done)
-  if (!next) return null
-  switch (next.id) {
-    case 'throneNode':
-      return 'commandCenter'
-    case 'voidForge':
-      return 'shipyard'
-    case 'commissionShip':
-      return 'fleet'
-    case 'firstAssault':
-      return 'invasion'
-    case 'noosphericInquiry':
-      return 'research'
-    default:
-      return null
+  if (!state.mandateGuide.dismissed && !isMandateComplete(state)) {
+    const steps = getMandateSteps(state)
+    const next = steps.find((s) => !s.done)
+    if (!next) return null
+    switch (next.id) {
+      case 'throneNode':
+        return 'commandCenter'
+      case 'voidForge':
+        return 'shipyard'
+      case 'commissionShip':
+        return 'fleet'
+      case 'firstAssault':
+        return 'invasion'
+      case 'noosphericInquiry':
+        return 'research'
+      default:
+        return null
+    }
   }
+
+  if (isGalacticMandateComplete(state)) return null
+
+  const galacticFocus = getGalacticMandateFocus(state)
+  if (galacticFocus === 'invasion') return 'invasion'
+  if (galacticFocus === 'galacticChart') return 'galacticChart'
+
+  return null
 }
 
 export function getEmpireNoosphereSummary(state: GameState): {

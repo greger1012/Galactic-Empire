@@ -69,8 +69,8 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     id: 'ready',
     title: 'The mandate is yours',
     body:
-      'Rival factions pulse every 15 cycles. Chronicle mandates reward long victories; after the founding sector, procedural void frontiers await. ' +
-      'Begin when you are ready — the First Mandate Briefing will guide your next clicks.',
+      'Rival factions pulse every 15 cycles. Follow Imperial Cartography to secure Helios Corridor, chart hyperlanes, and push into neighboring stars. ' +
+      'Begin when you are ready — the First Mandate Briefing and cartography panels guide your next clicks.',
   },
 ]
 

@@ -138,7 +138,8 @@ export function getFactionLore(factionId: string): FactionLore | undefined {
 
 export const OPENING_CHRONICLE =
   'Mandate transmitted. You are named Warden of Helios Prime, throne-world of the Solar Ascendancy. ' +
-  'Raise cutting-edge infrastructure, commission void warships, and bring the contested stars under a single mandate.'
+  'Raise cutting-edge infrastructure, commission void warships, and bring the contested stars under a single mandate. ' +
+  'Imperial cartographers mark twelve star systems — only Helios Corridor is charted until you secure the founding worlds and unlock hyperlane surveys.'
 
 export const WIN_CHRONICLE =
   'Mandate absolute in the founding sector. Every contested world now flies the Iron Sun banner. ' +

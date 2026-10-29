@@ -1,8 +1,10 @@
+import { useMemo } from 'react'
 import { BUILDING_INFO, ENEMY_FACTIONS, PLANET_SPECIALIZATION_LABELS, PLANET_TYPE_INFO } from '../game/constants'
 import { getBuildingCost, getBuildingLevel, getEffectiveMaxPopulation } from '../game/engine'
 import { LORE } from '../game/lore'
 import { getPlanetEpithet } from '../game/names'
 import { getMandateFocus } from '../game/mandateGuide'
+import { getSystemSummaryForPlanet } from '../game/galacticMandate'
 import type { BuildingType } from '../game/types'
 import { useGameStore, useProductionRates, useTechModifiers } from '../store/gameStore'
 import { EmpireNoosphereStrip } from './EmpireNoosphereStrip'
@@ -15,14 +17,22 @@ function formatBonus(value: number): string {
 }
 
 export function PlanetPanel() {
-  const planet = useGameStore((s) =>
-    s.planets.find((p) => p.id === s.selectedPlanetId)
+  const selectedPlanetId = useGameStore((s) => s.selectedPlanetId)
+  const planets = useGameStore((s) => s.planets)
+  const starSystems = useGameStore((s) => s.starSystems)
+  const planet = useMemo(
+    () => planets.find((p) => p.id === selectedPlanetId),
+    [planets, selectedPlanetId]
   )
   const resources = useGameStore((s) => s.resources)
   const upgradeBuilding = useGameStore((s) => s.upgradeBuilding)
   const rates = useProductionRates()
   const mods = useTechModifiers()
   const mandateFocus = useGameStore((s) => getMandateFocus(s))
+  const systemSummary = useMemo(
+    () => getSystemSummaryForPlanet(useGameStore.getState(), planet?.systemId),
+    [planets, starSystems, planet?.systemId]
+  )
 
   if (!planet) return null
 
@@ -55,6 +65,13 @@ export function PlanetPanel() {
           </span>
         </div>
       </div>
+
+      {systemSummary.system && (
+        <p className="planet-system-context">
+          Star system: <strong>{systemSummary.system.name}</strong> ({systemSummary.system.starLabel}) ·{' '}
+          {systemSummary.throne} throne · {systemSummary.contested} contested
+        </p>
+      )}
 
       <p className="planet-description">{typeInfo.description}</p>
 

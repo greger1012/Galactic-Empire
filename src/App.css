@@ -1632,6 +1632,44 @@
   border-color: rgba(201, 162, 39, 0.35);
 }
 
+.galactic-mandate-panel {
+  border-color: rgba(110, 196, 216, 0.35);
+}
+
+.galactic-progression-callout {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--accent-cyan);
+  background: rgba(110, 196, 216, 0.08);
+  border: 1px solid rgba(110, 196, 216, 0.25);
+  border-radius: 6px;
+  padding: 0.55rem 0.75rem;
+  margin-bottom: 0.65rem;
+  text-align: center;
+}
+
+.active-system-context {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.72rem;
+  color: var(--accent-cyan);
+  letter-spacing: 0.03em;
+}
+
+.planet-system-context {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 0.65rem;
+  padding: 0.4rem 0.55rem;
+  border-left: 2px solid rgba(110, 196, 216, 0.45);
+  background: rgba(110, 196, 216, 0.05);
+}
+
+.planet-system-context strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
 .mandate-guide-header {
   display: flex;
   align-items: center;

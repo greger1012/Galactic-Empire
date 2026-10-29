@@ -13,6 +13,7 @@ import {
   planetsInSystem,
 } from '../game/starSystems'
 import type { Planet, StarSystem } from '../game/types'
+import { getGalacticMapCallout, getGalacticMandateFocus } from '../game/galacticMandate'
 import { getMandateFocus } from '../game/mandateGuide'
 import { useFleetPower, useGameStore } from '../store/gameStore'
 
@@ -309,6 +310,8 @@ export function GalaxyMap() {
   const initiateInvasion = useGameStore((s) => s.initiateInvasion)
   const fleetPower = useFleetPower()
   const mandateFocus = useGameStore((s) => getMandateFocus(s))
+  const galacticFocus = useGameStore((s) => getGalacticMandateFocus(s))
+  const mapCallout = useGameStore((s) => getGalacticMapCallout(s))
   const frontierWave = useGameStore((s) => s.frontier.wave)
 
   const chartedCount = starSystems.filter((s) => s.charted).length
@@ -323,7 +326,10 @@ export function GalaxyMap() {
     : undefined
 
   return (
-    <section className="panel galaxy-panel" data-tutorial-id="galaxy-panel">
+    <section
+      className={`panel galaxy-panel${mandateFocus === 'invasion' || galacticFocus === 'galacticChart' ? ' mandate-focus' : ''}`}
+      data-tutorial-id="galaxy-panel"
+    >
       <div className="galaxy-panel-header">
         <h2>{LORE.galaxyMapTitle}</h2>
         <div className="map-view-toggle">
@@ -353,6 +359,8 @@ export function GalaxyMap() {
           <span className="frontier-count">Void frontier: {frontierWave}</span>
         )}
       </div>
+
+      {mapCallout && <p className="galactic-progression-callout">{mapCallout}</p>}
 
       {stellarMapView === 'galaxy' ? (
         <GalacticChart

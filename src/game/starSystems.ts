@@ -64,8 +64,8 @@ export function createInitialStarSystems(): StarSystem[] {
   }))
 }
 
-export function getStarSystem(state: { starSystems: StarSystem[] }, systemId: string): StarSystem | undefined {
-  return state.starSystems.find((s) => s.id === systemId)
+export function getStarSystem(state: { starSystems?: StarSystem[] }, systemId: string): StarSystem | undefined {
+  return (state.starSystems ?? []).find((s) => s.id === systemId)
 }
 
 export function planetsInSystem(planets: Planet[], systemId: string): Planet[] {

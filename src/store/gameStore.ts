@@ -402,10 +402,21 @@ export const useGameStore = create<GameStore>()(
             )
             spawnEvents = spawned.events
 
+            const chartedBefore = starSystems.filter((s) => s.charted).length
             const charted = chartAdjacentStarSystems(systemId, starSystems, planets)
             starSystems = charted.starSystems
             planets = charted.planets
             spawnEvents = [...spawnEvents, ...charted.events]
+            const chartedAfter = starSystems.filter((s) => s.charted).length
+            if (chartedBefore === 1 && chartedAfter > 1) {
+              spawnEvents = [
+                createEvent(
+                  'success',
+                  'Hyperlane surveys complete — neighboring stars enter the mandate chart. Follow Imperial Cartography on the Stellar Cartograph.'
+                ),
+                ...spawnEvents,
+              ]
+            }
           }
         }
 

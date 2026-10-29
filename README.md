@@ -17,7 +17,13 @@ A browser-based space empire strategy game set during humanity's **Golden Age of
 
 ## Getting Started
 
+**Full playtest line (recommended):** checkout branch `cursor/integrated-playtest-8267` — merges tactical combat, map pan/zoom, Warden + combat tutorials, and the 12-system galactic chart.
+
 ```bash
+git clone https://github.com/greger1012/Galactic-Empire.git
+cd Galactic-Empire
+git fetch origin
+git checkout cursor/integrated-playtest-8267
 npm install
 npm run dev
 npm run test:e2e   # Playwright smoke test (builds + preview)

@@ -5,6 +5,7 @@ import { useBattleStore } from '../store/battleStore'
 import { useGameStore } from '../store/gameStore'
 import { EventLog } from './EventLog'
 import { FleetPanel } from './FleetPanel'
+import { GalacticMandatePanel } from './GalacticMandatePanel'
 import { GalaxyMap } from './GalaxyMap'
 import { PlanetPanel } from './PlanetPanel'
 import { ChroniclePanel } from './ChroniclePanel'
@@ -66,6 +67,7 @@ export function Game() {
       <main className="game-layout">
         <div className="left-column">
           <MandateGuide />
+          <GalacticMandatePanel />
           <ChroniclePanel />
           <GalaxyMap />
           <EventLog />
