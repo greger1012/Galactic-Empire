@@ -146,6 +146,8 @@ export interface BattleSetup {
   orbitalChronicle?: string
   frontierWave?: number
   isFrontierBoss?: boolean
+  /** Aegis from sibling contested worlds (included in defenseRating). */
+  garrisonBonus?: number
 }
 
 export function createBattle(setup: BattleSetup): BattleState {

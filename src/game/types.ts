@@ -74,6 +74,8 @@ export interface Planet {
   frontierWave?: number
   /** One apex bastion per void frontier wave — extra aegis and legions. */
   isFrontierBoss?: boolean
+  /** Mandate cycles before conquered worlds reach full imperial output. */
+  occupationUnrest?: number
 }
 
 export interface StarSystem {

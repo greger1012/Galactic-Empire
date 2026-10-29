@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ConquestDossierPanel } from './ConquestDossierPanel'
 import { ENEMY_FACTIONS, PLANET_TYPE_INFO, getPlanetTypeSummary } from '../game/constants'
 import { getDeepVoidTierLabel } from '../game/deepVoid'
 import { getGalaxyMapBounds, getPlanetMapPosition } from '../game/frontierGeneration'
@@ -398,9 +399,11 @@ export function GalaxyMap() {
             </p>
           )}
           <p>
-            {getPlanetTypeSummary(selectedPlanet.type)} · Aegis rating:{' '}
-            {selectedPlanet.defenseRating} · Void armada strength: {fleetPower}
+            {getPlanetTypeSummary(selectedPlanet.type)} · Mandate assault uses effective aegis (see dossier)
           </p>
+          {selectedPlanet.owner === 'enemy' && (
+            <ConquestDossierPanel planetId={selectedPlanet.id} />
+          )}
           {selectedPlanet.owner === 'enemy' && (
             <button
               className={`btn btn-attack${mandateFocus === 'invasion' ? ' mandate-focus' : ''}${selectedPlanet.isFrontierBoss ? ' boss-assault' : ''}`}
