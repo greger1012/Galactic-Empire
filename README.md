@@ -7,7 +7,7 @@ A browser-based space empire strategy game set during humanity's **Golden Age of
 1. **Follow the First Mandate Briefing** — Raise a Noospheric Throne Node, build a Void Forge Annexe, commission voidships, assault a contested world, and begin research.
 2. **Manage Helios Prime** — Upgrade infrastructure (Stratum Excavators, Helios Collectors, Vitae Domes, etc.) each mandate cycle.
 3. **Build the Void Armada** — Commission Spectre Corvettes, Lance Frigates, and heavier hulls from the Void Forge.
-4. **Mandate of Conquest** — **Tactical void battle** (move your armada, fight hostile interceptors, burn down the orbital aegis) after choosing doctrine, then top-down ground assaults (biomes, faction loadouts).
+4. **Mandate of Conquest** — Read the **conquest dossier** (threat tier, garrison web, legion estimates, suggested doctrine), then **tactical void battle** and ground assaults (biomes, faction loadouts). New throne worlds **pacify** over several cycles; rivals may **reprisal-reinforce** siblings.
 5. **Galactic chart** — **12 star systems** on the stellar cartograph (Helios Corridor + outer stars). Start in the founding system; **chart neighboring stars** when a system is fully secured. Each system has its own worlds and void frontier waves.
 6. **Triumph (not game over)** — Annex the founding sector **or** fulfill **three Imperial Chronicle mandates** for a Mandate of Mastery. Either milestone unlocks a dismissible victory banner; the mandate cycle **keeps running**.
 7. **Endless void frontiers** — When every contested world in a **star system** falls, cartographers spawn the next **procedural wave** in that system and may **chart adjacent stars** via hyperlanes.
