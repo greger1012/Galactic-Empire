@@ -8,7 +8,7 @@ A browser-based space empire strategy game set during humanity's **Golden Age of
 2. **Manage Helios Prime** — Upgrade infrastructure (Stratum Excavators, Helios Collectors, Vitae Domes, etc.) each mandate cycle.
 3. **Build the Void Armada** — Commission Spectre Corvettes, Lance Frigates, and heavier hulls from the Void Forge.
 4. **Mandate of Conquest** — Read the **conquest dossier** (threat tier, garrison web, legion estimates, suggested doctrine), then **tactical void battle** and ground assaults (biomes, faction loadouts). New throne worlds **pacify** over several cycles; rivals may **reprisal-reinforce** siblings.
-5. **Galactic chart** — **12 star systems** on the stellar cartograph (Helios Corridor + outer stars). Start in the founding system; **chart neighboring stars** when a system is fully secured. Each system has its own worlds and void frontier waves.
+5. **Galactic chart** — **12 star systems** on the stellar cartograph (Helios Corridor + outer stars). Follow **Imperial Cartography** (secure Helios, chart hyperlanes, outer throne world). Chart neighbors when a system is fully secured.
 6. **Triumph (not game over)** — Annex the founding sector **or** fulfill **three Imperial Chronicle mandates** for a Mandate of Mastery. Either milestone unlocks a dismissible victory banner; the mandate cycle **keeps running**.
 7. **Endless void frontiers** — When every contested world in a **star system** falls, cartographers spawn the next **procedural wave** in that system and may **chart adjacent stars** via hyperlanes.
 8. **Deep void tiers** — Shallow → mid → deep → abyssal difficulty: higher aegis, more legions, and harsher faction pulses the farther you push.
@@ -17,7 +17,7 @@ A browser-based space empire strategy game set during humanity's **Golden Age of
 
 ## Getting Started
 
-**Full playtest line (recommended):** checkout branch `cursor/integrated-playtest-8267` — merges tactical combat, map pan/zoom, Warden + combat tutorials, and the 12-system galactic chart.
+**Full playtest line (recommended):** checkout branch `cursor/integrated-playtest-8267` — full stack (#2–#5) plus **Imperial Cartography** (multi-star progression) and **conquest dossier / garrison depth**.
 
 ```bash
 git clone https://github.com/greger1012/Galactic-Empire.git
